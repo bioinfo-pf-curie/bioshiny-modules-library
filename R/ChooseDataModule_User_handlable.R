@@ -16,7 +16,6 @@
 #' @importFrom htmltools tagList tags singleton
 #' @importFrom shiny NS actionButton icon
 #'
-#' @example
 ImportDataUI <- function(id, label = "Import Data") {
   ns <- NS(id)
   tagList(
@@ -44,6 +43,10 @@ ImportDataUI <- function(id, label = "Import Data") {
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
+#' @importFrom assertthat has_extension see_if
+
+
+
 ImportDataServer <- function(input, output, session) {
 
   ns <- session$ns
@@ -52,16 +55,16 @@ ImportDataServer <- function(input, output, session) {
 
   observeEvent(input$button, {
 
-
+    req(input$button)
     dataModal <- function(failed = FALSE ) {
       modalDialog(easyClose =TRUE ,
-                  selectInput(inputId  = "sep", label = "File Separator",
-                              choices = c(",","\\t"," "), selected = ","),
-                  selectInput(inputId = "Head", label = "Header",
+                  selectInput(inputId  = ns("sep"), label = "File Separator",
+                              choices = c(",","\\t",";"), selected = ","),
+                  selectInput(inputId = ns("Head"), label = "Header",
                               choices = c("Yes","No"),
                               selected = "Yes"),
                   #footer = modalButton("Use this parameters"),
-                  footer = actionButton("OKbutton","Use this parameters")
+                  footer = actionButton(ns("OKbutton"),"Use this parameters")
 
       )
     }
@@ -77,14 +80,6 @@ ImportDataServer <- function(input, output, session) {
 
       showModal(dataModal())
 
-
-     # if (input$Head == "Yes") {
-     #   Head <- TRUE
-     # } else if (input$Head == "No") {
-     #   Head <- FALSE
-     # }
-     #data$table <- read.table(infile$datapath, header = Head, sep = input$sep)
-
    }
   observeEvent(input$OKbutton,{
   removeModal()
@@ -95,7 +90,6 @@ ImportDataServer <- function(input, output, session) {
   }
   data$table <- read.table(infile$datapath, header = Head, sep = input$sep)
   })
-
 
   })
 
