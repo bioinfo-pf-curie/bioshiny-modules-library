@@ -45,7 +45,7 @@ ImportDataUIFixed <- function(id, label = "Import Data") {
 
 
 
-ImportDataServerFixed <- function(input, output, session, header = NULL, sep  = NULL, ext = 'txt') {
+ImportDataServerFixed <- function(input, output, session, header = NULL, sep  = NULL, ext = 'txt', row.names = NULL )  {
 
   ns <- session$ns
   data <- reactiveValues(table = NULL , name = NULL)
@@ -57,7 +57,7 @@ ImportDataServerFixed <- function(input, output, session, header = NULL, sep  = 
   infile <- input$button
    if ( ext == 'txt') {
 
-     data$table <- read.table(infile$datapath, header = header, sep = sep)
+     data$table <- read.table(infile$datapath, header = header, sep = sep, row.names = row.names)
 
    } else if (ext == "xls"
               | ext == "xlsx"){

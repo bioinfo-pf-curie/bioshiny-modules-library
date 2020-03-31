@@ -13,16 +13,18 @@
 #'
 #'
 #' @importFrom htmltools tagList tags singleton
-#' @importFrom shiny NS actionButton icon
+#' @importFrom shiny NS actionButton icon uiOutput
 #'
 #'
 #'
 
 
-CreateDdsUI <- function(id) {
+CreateDdsUI <- function(id)  {
 ns <- NS(id)
-
-uiOutput("printdds")
+tagList(
+  fluidRow(uiOutput(ns("CreateButtonUI"))),
+  fluidRow(uiOutput(ns("printdds")))
+)
 
 }
 
@@ -36,17 +38,33 @@ uiOutput("printdds")
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
-#' @importFrom readxl read_excel
+#' @importFrom DESeq2 DESeqDataSetFromMatrix
 
 
+CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata = NULL) {
 
-CreateDdsServer <- function(input, output, session, matrix = NULL, annotation = NULL) {
+  req(countmatrix)
+  ns <- session$ns
+
+  ### Defin reactives #############
+  reactives <-  reactiveValues(mydds = NULL)
+
+
+  output$CreateButtonUI <- renderUI({
+    # if (is.null(countmatrix)) {
+    #   shinyjs::disabled(
+    #     actionButton(ns("CreateButton"), label = "Create DDS object")
+    #   )
+    # } else {
+     actionButton(ns("CreateButton"), label = "Create DDS object")
+    #}
+  })
 
 
   output$printdds <- renderUI({
     shiny::validate(
       need(
-        !is.null(values$mydds),
+        !is.null(reactives$mydds),
         "Upload your dataset, as a count matrix or passing it as a parameter, as well as the design information"
       )
     )
@@ -54,8 +72,43 @@ CreateDdsServer <- function(input, output, session, matrix = NULL, annotation = 
   })
 
   output$ddsprint <- renderPrint({
-    values$mydds
+    reactives$mydds
   })
 
+
+
+  observeEvent(input$CreateButton,{
+
+    if (is.null(countmatrix) | is.null(coldata)) {
+      return(NULL)
+
+    } else {
+
+      dds <- DESeqDataSetFromMatrix(
+        countData = countmatrix,
+        colData = coldata,
+        design = ~ 1
+      )
+      dds <- estimateSizeFactors(dds)
+
+    }
+
+  if (!is.null(dds)) {
+    if (!is(dds, "DESeqDataSet")) {
+      stop("dds must be a DESeqDataSet object. If it is a simple counts matrix, provide it to the countmatrix parameter!")
+    }
+  }
+
+  if (!is.null(dds)) {
+    if (is.null(sizeFactors(dds))) {
+      dds <- estimateSizeFactors(dds)
+    }
+  }
+
+  reactives$mydds <- dds
+
+  })
+
+  return(reactives$mydds)
 }
 

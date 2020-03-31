@@ -1,4 +1,4 @@
-#' @title Module for drawing PCA from counts matrix
+#' @title Check RNASeqdata for further analysis
 #'
 #' @description
 #'
@@ -13,15 +13,16 @@
 #'
 #'
 #' @importFrom htmltools tagList tags singleton
-#' @importFrom shiny NS actionButton icon
-
-
-DrawPCAUI <- function(id) {
-  ns <- NS(id)
+#' @importFrom shiny NS actionButton icon uiOutput
 
 
 
-}
+
+
+
+
+
+
 
 
 
@@ -34,12 +35,4 @@ DrawPCAUI <- function(id) {
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
-#' @importFrom readxl read_excel
-
-
-
-DrawPCAServer <- function(input, output, session, matrix = NULL, annotation = NULL) {
-
-
-
-}
+#' @importFrom DESeq2 DESeqDataSetFromMatrix
