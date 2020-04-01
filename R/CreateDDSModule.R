@@ -51,13 +51,13 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata 
 
 
   output$CreateButtonUI <- renderUI({
-    # if (is.null(countmatrix)) {
-    #   shinyjs::disabled(
-    #     actionButton(ns("CreateButton"), label = "Create DDS object")
-    #   )
-    # } else {
+    if (is.null(countmatrix) | is.null(coldata)) {
+      shinyjs::disabled(
+        actionButton(ns("CreateButton"), label = "Create DDS object")
+      )
+    } else {
      actionButton(ns("CreateButton"), label = "Create DDS object")
-    #}
+    }
   })
 
 
