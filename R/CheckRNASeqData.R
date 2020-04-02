@@ -19,9 +19,9 @@
 CheckRNAseqDataUI <- function(id) {
   ns <- NS(id)
 
-
-  actionButton(ns("checkdata"),"Check Data")
-
+  tagList(
+  actionButton(ns("checkdata"),"Valid your data to unlock further analysis")
+  )
 
 }
 
@@ -40,6 +40,9 @@ CheckRNAseqDataUI <- function(id) {
 
 CheckRNAseqDataServer <- function(input, output, session, matrix = NULL, annotation = NULL, metadata = NULL) {
 
+
+  ns <- session$ns
+
   validationModal <- function(msg = "", title = "Validation failed") {
     showModal(modalDialog(p(msg),
                           title = title,
@@ -50,20 +53,14 @@ CheckRNAseqDataServer <- function(input, output, session, matrix = NULL, annotat
 
 }
 
+reactives <- reactiveValues(data_validated = FALSE)
 
-reactives <- reactiveValues(matrix = NULL, metadata= NULL)
+observeEvent(matrix$table, {
 
-reactives$matrix <- matrix
-reactives$metadata <- metadata
-
-
-
-observeEvent(reactives$matrix, {
-
-  if(!is.null(matrix)){
+  if(!is.null(matrix$table)){
 
 
-  the_data <- reactives$matrix
+  the_data <- matrix$table
 
 
   num_rows <- length(the_data[, 1])
@@ -81,17 +78,19 @@ observeEvent(reactives$matrix, {
       )
     )
     return(-1)
+    reactives$data_validated <- FALSE
+
   }
 }
 })
 
 
-observeEvent(reactives$metadata,{
+observeEvent(metadata$table,{
   # # now load the metadata
 
-  if(!is.null(metadata)){
+  if(!is.null(metadata$table)){
 
-  the_metadata <- reactives$metadata
+  the_metadata <- metadata$table
 
   num_rows <- length(the_metadata[, 1])
   num_cols <- length(the_metadata)
@@ -108,6 +107,8 @@ observeEvent(reactives$metadata,{
       )
     )
     return(-1)
+    reactives$data_validated <- FALSE
+
   }
 }
 })
@@ -116,12 +117,12 @@ observeEvent(reactives$metadata,{
 observeEvent(input$checkdata,{
 
 
-  if (!(is.null(matrix) | is.null(metadata))){
-    the_metadata <- reactives$metadata
-    the_data <- reactives$matrix
+  if (!(is.null(matrix$table) | is.null(metadata$table))){
+    the_metadata <- metadata$table
+    the_data <- matrix$table
     # check that all samples from the count data are present in the metadata and vice versa
     metadata_names <- rownames(the_metadata)
-    countdata_names <- rownames(the_data)
+    countdata_names <- colnames(the_data)
 
     countdata_missing_from_metadata <-
       countdata_names[!(countdata_names %in% metadata_names)]
@@ -138,6 +139,8 @@ observeEvent(input$checkdata,{
         )
       )
       return(-1)
+      reactives$data_validated <- FALSE
+
     }
 
     if (length(metadata_missing_from_countdata) > 0) {
@@ -150,15 +153,17 @@ observeEvent(input$checkdata,{
         )
       )
       return(-1)
+      reactives$data_validated <- FALSE
+
     }
 
-    #TODO:  if we get here, set the data_validated variable to 1
-    data_validated <- 1
+    #TODO:  if we get here, set the data_validated variable to TRUE
+    reactives$data_validated <- TRUE
 
     validationModal(msg = "Input looks good!", title = "Validation passed!")
   }
 })
 
-
+return(reactives)
 
 }

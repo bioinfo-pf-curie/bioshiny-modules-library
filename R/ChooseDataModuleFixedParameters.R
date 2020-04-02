@@ -28,7 +28,7 @@ ImportDataUIFixed <- function(id, label = "Import Data") {
                        '.tsv')
               )
 
-  )
+  )# End of TagList
 }
 
 
@@ -48,8 +48,8 @@ ImportDataUIFixed <- function(id, label = "Import Data") {
 ImportDataServerFixed <- function(input, output, session, header = NULL, sep  = NULL, ext = 'txt', row.names = NULL )  {
 
   ns <- session$ns
-  data <- reactiveValues(table = NULL , name = NULL)
-
+  data <- reactiveValues(table = NULL , name = NULL, trigger = NULL)
+  # data_table <- reactive({NULL})
 
   observeEvent(input$button, {
 

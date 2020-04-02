@@ -41,9 +41,10 @@ tagList(
 #' @importFrom DESeq2 DESeqDataSetFromMatrix
 
 
-CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata = NULL) {
+CreateDdsServer <- function(input, output, session, countmatrix = NULL, colData = NULL) {
 
   req(countmatrix)
+  req(colData)
   ns <- session$ns
 
   ### Defin reactives #############
@@ -51,13 +52,15 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata 
 
 
   output$CreateButtonUI <- renderUI({
-    if (is.null(countmatrix) | is.null(coldata)) {
+    if (is.null(countmatrix$table) | is.null(colData$table)) {
       shinyjs::disabled(
         actionButton(ns("CreateButton"), label = "Create DDS object")
       )
     } else {
+    tagList(
      actionButton(ns("CreateButton"), label = "Create DDS object")
-    }
+    )#end of TagList
+     }
   })
 
 
@@ -68,7 +71,7 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata 
         "Upload your dataset, as a count matrix or passing it as a parameter, as well as the design information"
       )
     )
-    verbatimTextOutput("ddsprint")
+    verbatimTextOutput(ns("ddsprint"))
   })
 
   output$ddsprint <- renderPrint({
@@ -79,14 +82,14 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata 
 
   observeEvent(input$CreateButton,{
 
-    if (is.null(countmatrix) | is.null(coldata)) {
+    if (is.null(countmatrix$table) | is.null(colData$table)) {
       return(NULL)
 
     } else {
 
       dds <- DESeqDataSetFromMatrix(
-        countData = countmatrix,
-        colData = coldata,
+        countData = countmatrix$table,
+        colData = coldata$table,
         design = ~ 1
       )
       dds <- estimateSizeFactors(dds)
@@ -109,6 +112,7 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, coldata 
 
   })
 
-  return(reactives$mydds)
+  return(reactives)
+
 }
 

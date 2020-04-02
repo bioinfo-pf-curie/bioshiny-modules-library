@@ -31,6 +31,7 @@ DrawPCAUI2 <- function(id) {
                                            # just a little bit, it will cause the plots to recalculate. We can get around
                                            # this if we change to a different type of control
                                            uiOutput(ns('selectNumGenes')),
+                                           #tagList(
                                            checkboxInput(inputId = ns('center'),
                                                          label = 'Shift variables to be zero-centered',
                                                          value = TRUE),
@@ -42,13 +43,16 @@ DrawPCAUI2 <- function(id) {
                                                                     'Variance Stabilizing Transform (vst)'='vst',
                                                                     'Regularized logarithm (rlog) - WARNING: this can take considerable time'='rlog'),
                                                         selected = 'NONE')
-                                         ) # end wellPanel
+                                           #)#end of TagList
+                                           ) # end wellPanel
                ),column(6,
                         wellPanel(
                           uiOutput(ns("choose_samples_pca"))
                         )
                )),
+               tagList(
                actionButton(ns("pcago"),"RunPCA"))
+               )#end of Taglist
       ), # end  tab
 
       tabPanel("Plots",
@@ -90,7 +94,9 @@ DrawPCAUI2 <- function(id) {
                                            p("Deselecting samples from the list below will remove them from the plot without recalculating the PCA.
                         To remove samples from the PCA calculation, deselect them from the 'Parameters' tab"),
                                            uiOutput(ns("choose_samples_display"))
-                          )
+
+                          #) #End of TagList
+                                           )
                         )), # end row
                h3("Zoomed biplot"),
                p("The selected points in the plots above are zoomed in on this plot and their details are available in the table below."),
@@ -111,7 +117,7 @@ DrawPCAUI2 <- function(id) {
                fluidRow(verbatimTextOutput(ns("pca_details")))#)
       ), # end  tab
       id="mainTabPanel",
-      selected="Input"
+      selected="Parameters"
     ))# end tabsetPanel
 
 
@@ -135,47 +141,39 @@ DrawPCAUI2 <- function(id) {
 DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = NULL, metadata = NULL) {
 
   ns <- session$ns
-
-  reactives <- reactiveValues(matrix = matrix, metadata = metadata, combined = NULL)
-
-  data_validated <- 0
-
-  # initialize the output validated flag to 0
-  output$validated <- reactive({
-    data_validated
-  })
-
+  req(matrix)
+  req(metadata)
+  reactives <- reactiveValues(combined = NULL, matrix = NULL, metadata = NULL)
   # read in the CSV
   # this is reactive and should only change if the CSV file is changed
-  observeEvent( matrix, {
-    #observe({
+  observeEvent( matrix$table, {
 
-    if (!is.null(matrix)){
-      reactives$matrix <- as.data.frame(t(matrix))
-      reactives$matrix <- reactives$matrix[order(row.names(reactives$matrix)), ]
-
+    if (!is.null(matrix$table)){
+      matrix <- as.data.frame(t(matrix$table))
+      matrix <- matrix[order(row.names(matrix)), ]
+      reactives$matrix <- matrix
     }
 
 
   })
 
-  observeEvent( metadata, {
-    #observe({
+  observeEvent( metadata$table,{
 
-    if (!is.null(metadata)){
+    if (!is.null(metadata$table)){
 
-      reactives$metadata <- metadata
-      cnames <- colnames(reactives$metadata)
-      num_cols <- ncol(reactives$metadata)
-      the_metadata_plus <- data.frame(reactives$metadata, reactives$metadata[,1])
+      cnames <- colnames(metadata$table)
+      num_cols <- ncol(metadata$table)
+      the_metadata_plus <- data.frame(metadata$table, metadata$table[,1])
       # sort the colData by row names for good measure
       the_metadata_plus <- the_metadata_plus[order(row.names(the_metadata_plus)), ]
       # now remove the last column
-      reactives$metadata <- the_metadata_plus[1:num_cols]
+      the_metadata_plus <- the_metadata_plus[1:num_cols]
 
       # make each column a factor
-      reactives$metadata[1:length(reactives$metadata)] <-
-        as.data.frame(lapply(reactives$metadata, factor))
+      the_metadata_plus[1:length(the_metadata_plus)] <-
+        as.data.frame(lapply(the_metadata_plus, factor))
+
+      reactives$metadata <- the_metadata_plus
 
 
     }
@@ -188,38 +186,23 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
   # combine the data & metadata for PCA visualization
   # and validate that data are good
 
-
-  #observeEvent( c(reactives$metadata,reactives$matrix), {
-
-  #observeEvent( input$pcago, {
   observeEvent({
-    reactives$metadata
-    reactives$matrix}, {
+    c(reactives$metadata,
+    reactives$matrix)}, {
 
-      if ((!is.null(metadata)) & (!is.null(matrix)))  {
+      if ((!is.null(reactives$metadata)) & (!is.null(reactives$matrix)))  {
         # check that all samples from the count data are present in the metadata and vice versa
-        the_metadata <- reactives$metadata
-        the_data <- reactives$matrix
-        metadata_names <- rownames(the_metadata)
-        countdata_names <- rownames(the_data)
-
-        countdata_missing_from_metadata <-
-          countdata_names[!(countdata_names %in% metadata_names)]
-        metadata_missing_from_countdata <-
-          metadata_names[!(metadata_names %in% countdata_names)]
-
-        # print(paste("rownames the data :",rownames(the_data)))
-        # print(paste("rownames the metadata :",rownames(the_metadata)))
-
+        print(rownames(reactives$metadata))
+        print(rownames(reactives$matrix))
         # now combine them according to the row / column names
-        reactives$combined <- merge(the_data, the_metadata, by = "row.names")
+        combined <- merge(reactives$matrix, reactives$metadata, by = "row.names")
         # assign the row names and remove the row.names column
-        rownames(reactives$combined) <- reactives$combined$Row.names
-        reactives$combined <- reactives$combined[-1]
+        rownames(combined) <- combined$Row.names
+        combined <- combined[-1]
         # sort by row names
-        reactives$combined <- reactives$combined[order(row.names(reactives$combined)), ]
+        combined <- combined[order(row.names(combined)), ]
 
-
+        reactives$combined <- combined
       }#fin du if
     })
 
@@ -234,20 +217,21 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
 
   # display a summary of the CSV contents
   output$summary <-  renderTable({
-    the_data <- reactives$matrix
-    psych::describe(the_data)
+    psych::describe(reactives$matrix)
     cat(file = stderr(), "past describe")
   })
 
   output$selectNumGenes <- renderUI({
 
-    # max_genes = length(the_data[1,])
+    # max_genes = length(matrix$table[1,])
     print(length(reactives$combined[1,]))
+    #tagList(
     sliderInput(ns('num_top_genes'), 'Number of genes to use for calculating PCA (sorted by variance)',
                 min=100,
                 max=length(reactives$combined[1,]),
                 step=100,
                 value=min(length(reactives$combined[1,])))
+   #)
 
 
   })
@@ -260,11 +244,13 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
     samplenames <- rownames(the_metadata)
 
     # Create the checkboxes and select them all by default
+    #tagList(
     checkboxGroupInput(ns("display_samples"),
                        "Choose samples to display on the plot:",
                        choices  = samplenames,
                        selected = samplenames)
-  })
+    #)
+     })
 
 
   #### Il fau que les samplenames soient dipi avant de lancer PCAGo sinan ça marche pas !!!
@@ -274,10 +260,12 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
 
 
     # Create the checkboxes and select them all by default
+    #tagList(
     checkboxGroupInput(ns("samples"),
                        "Choose samples to include in the PCA calculation:",
                        choices  = rownames(reactives$combined),
                        selected = rownames(reactives$combined))
+    #)
   })
 
   # choose a grouping variable
@@ -286,12 +274,13 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
 
     the_data_group_cols <- names(the_metadata)
 
+    #tagList(
     # drop down selection
     selectInput(
       inputId = ns("the_grouping_variable"),
       label = "Color by:",
-      choices = c("None", the_data_group_cols)
-    )
+      choices = c("None", the_data_group_cols))
+    #) #end of TagList
 
   })
 
@@ -306,7 +295,7 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
   observeEvent( input$pcago , {
 
 
-    if ((!is.null(reactives$matrix)) & (!is.null(reactives$metadata))){
+    if (!(is.null(reactives$matrix) | is.null(reactives$metadata))){
 
 
       withProgress(message = 'PCA calculation in progress',
@@ -411,13 +400,14 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
   #   # for selecting in the scree plot
   output$pc_range <- renderUI({
     pca_output <- pca_objects$pca_output$x
-
+    #tagList(
     numericInput(ns("pc_range"),
                  "Number of PCs to plot",
                  value=10,
                  min = 1,
                  max = length(pca_output[,1]),
                  width= '100px')
+    #)#End of TagList
 
   })
 
@@ -425,24 +415,25 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
     #pca_output <- pca_objects$pca_output$x
 
     # drop down selection
+    #tagList(
     selectInput(
       inputId = ns("the_pcs_to_plot_x"),
       label = "X axis:",
       choices = colnames(pca_objects$pca_output$x),
-      selected = colnames(pca_objects$pca_output$x)[1]
-    )
+      selected = colnames(pca_objects$pca_output$x)[1])
+    #)#End of TagList
   })
 
   output$the_pcs_to_plot_y <- renderUI({
-    #pca_output <- pca_objects$pca_output$x
 
     # drop down selection
+    #tagList(
     selectInput(
       inputId = ns("the_pcs_to_plot_y"),
       label = "Y axis:",
       choices = colnames(pca_objects$pca_output$x),
-      selected = colnames(pca_objects$pca_output$x)[2]
-    )
+      selected = colnames(pca_objects$pca_output$x)[2])
+    #) #End of TagList
   })
 
     output$SCREE_PLOT <- renderPlot({
@@ -483,7 +474,8 @@ observeEvent( c(input$plotpca,
                 input$the_pcs_to_plot_x,
                 input$the_pcs_to_plot_y),{
 
-     if ((!is.null(matrix)) & (!is.null(metadata))){
+       if (!(is.null(reactives$matrix) | is.null(reactives$metadata))){
+
   #
        pcs_df <- pca_objects$pcs_df
        pca_output <-  pca_objects$pca_output
@@ -681,6 +673,6 @@ observeEvent( c(input$plotpca,
   })
 
 
-  #return(the_data)
+  return(reactives)
 
 }

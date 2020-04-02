@@ -20,13 +20,9 @@
 CreateModelUI <- function(id) {
 
   ns <- NS(id)
-
   fluidPage(
           fluidRow(box("Creates DEG model",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
                     status = "primary",width= 12,
-              # fluidRow(column(width = 6,uiOutput(ns("variables"))),
-              #          column(width = 6,uiOutput(ns("formula")))
-                #)
               uiOutput(ns("var")),
               uiOutput(ns("covar")),
               uiOutput(ns("interact")),
@@ -35,7 +31,8 @@ CreateModelUI <- function(id) {
           fluidRow(box("Comparison",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
               status = "primary",width= 12,
               uiOutput(ns("Group1")),
-              uiOutput(ns("Group2")))
+              uiOutput(ns("Group2")),
+              actionButton(ns("Build"),"Build Model"))
 
   ))
 }
@@ -55,31 +52,22 @@ CreateModelUI <- function(id) {
 
 CreateModelServer <- function(input, output, session, sampleplan = NULL , matrix = NULL ,batcheffect = NULL) {
 
+  req(sampleplan)
+  req(matrix)
+
     ns <- session$ns
 
-    reactives <- reactiveValues(sampleplan = NULL, formula = NULL, matrix = NULL, contrast = NULL)
+    reactives <- reactiveValues(design = NULL, formula = NULL, contrast = NULL)
 
-    reactives$sampleplan <- sampleplan
-    reactives$matrix <- matrix
+observeEvent({input$var
+              input$covar
+              input$interact},{
 
-
-# observeEvent({reactives$sampleplan
-#               input$var
-#               input$covar
-#               input$interact},{
-observe({
-    # if(!is.null(batcheffect)){
-    #   colnames(batcheffect) <- paste0('batch',1:ncol(batcheffect))
-    #   sampleplan <- data.frame(sampleplan,batcheffect)
-    # }
-    reactives$sampleplan <- sampleplan
-
-
-    if(!is.null(sampleplan)){
+    if(!is.null(sampleplan$table)){
       if(!is.null(input$var)){
-            if(!is.null(matrix)){
+            if(!is.null(matrix$table)){
 
-    design.idx <- colnames(reactives$sampleplan)
+    design.idx <- colnames(sampleplan$table)
     if (length(c(input$var,input$covar)) > 1){
 
     vector <- c(input$var,input$covar)
@@ -103,43 +91,36 @@ observe({
 
 })
 
-observe({
 
-  reactives$sampleplan <- sampleplan
-  reactives$matrix <- matrix
+observeEvent(input$Build,{
 
 
-  if(!is.null(sampleplan)){
+  if(!is.null(sampleplan$table)){
     if(!is.null(input$var)){
       if(!is.null(input$Group2sel)){
         if(!is.null(input$Group1sel)){
-      if(!is.null(matrix)){
+      if(!is.null(matrix())){
         if(!is.null(reactives$formula)){
 
-    design <- model.matrix(reactives$formula, data=reactives$sampleplan)
-    rownames(design) <- colnames(reactives$matrix)
+    design <- model.matrix(reactives$formula, data=sampleplan$table)
+    rownames(design) <- colnames(matrix$table)
     colnames(design) <- make.names(colnames(design))
-    print(paste0(input$var,input$Group1sel))
-    print(paste0(input$var,input$Group2sel))
-    #print(design)
-    print(paste0(paste0(input$var,input$Group1sel),"-",(paste0(input$var,input$Group2sel))))
     contrast <-makeContrasts(contrasts = paste0(paste0(input$var,input$Group1sel),"-",(paste0(input$var,input$Group2sel))) ,
                               levels=design)
     reactives$contrast <- contrast
-    print(reactives$contrast)
-    print(class(reactives$contrast))
 
       }
     }
   }}}
   }
+
 })
 
 
 
     output$formula <- renderUI({
 
-       if(!is.null(sampleplan)){
+       if(!is.null(sampleplan$table)){
 
 
          print(Reduce(paste,deparse(reactives$formula)))
@@ -151,34 +132,39 @@ observe({
 
  output$var <- renderUI({
 
-
-   selectInput(ns("var"),"Variable of interest :",choices = colnames(reactives$sampleplan),
-               multiple = FALSE, selected = colnames(reactives$sampleplan)[1])
-
+   tagList(
+   selectInput(ns("var"),"Variable of interest :",choices = colnames(sampleplan$table),
+               multiple = FALSE, selected = colnames(sampleplan$table)[1])
+    )
  })
 
  output$covar <- renderUI({
-   selectInput(ns("covar"),"Covariables :",choices = c("None" ="" ,colnames(reactives$sampleplan)),
+  tagList(
+   selectInput(ns("covar"),"Covariables :",choices = c("None" ="" ,colnames(sampleplan$table)),
                multiple = TRUE, selectize = TRUE)
-
+   )
 
  })
 
  output$interact <- renderUI({
-   conditionalPanel(condition = "input.covar.length > 0",
+   tagList(
      selectInput(ns("interact"),"Compute variables interactions ?", choices = c(TRUE,FALSE),
                selected = TRUE)
    )
  })
 
 output$Group1 <- renderUI({
-                    selectInput(ns("Group1sel"),"Compute variables interactions ?", choices = unique(reactives$sampleplan[,input$var]),
-                                selected= unique(reactives$sampleplan[,input$var])[1])
+  tagList(
+                    selectInput(ns("Group1sel"),"Compute variables interactions ?", choices = unique(sampleplan$table[,input$var]),
+                                selected= unique(sampleplan$table[,input$var])[1])
+          )
  })
 
 output$Group2 <- renderUI({
-                    selectInput(ns("Group2sel"),"Compute variables interactions ?", choices  = unique(reactives$sampleplan[,input$var]),
-                                selected = unique(reactives$sampleplan[,input$var])[2] )
+          tagList(
+                    selectInput(ns("Group2sel"),"Compute variables interactions ?", choices  = unique(sampleplan$table[,input$var]),
+                                selected = unique(sampleplan$table[,input$var])[2] )
+          )
 
  })
 
@@ -200,10 +186,12 @@ validationModalModel <- function(msg = "", title = "Model Error") {
                          title = title,
                          footer = tagList(
                            modalButton("Dismiss"),
-                           actionButton("returnToInput", "Return To Input Tab")
                          )))
 
 }
- return(reactives$contrast)
+
+
+return(reactives)
+
 
 }
