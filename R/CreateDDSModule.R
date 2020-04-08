@@ -38,7 +38,7 @@ tagList(
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
-#' @importFrom DESeq2 DESeqDataSetFromMatrix
+#' @importFrom DESeq2 DESeqDataSetFromMatrix estimateSizeFactors sizeFactors
 
 
 CreateDdsServer <- function(input, output, session, countmatrix = NULL, colData = NULL) {
@@ -68,7 +68,7 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, colData 
     shiny::validate(
       need(
         !is.null(reactives$mydds),
-        "Upload your dataset, as a count matrix or passing it as a parameter, as well as the design information"
+        "Upload your dataset first"
       )
     )
     verbatimTextOutput(ns("ddsprint"))
@@ -89,7 +89,7 @@ CreateDdsServer <- function(input, output, session, countmatrix = NULL, colData 
 
       dds <- DESeqDataSetFromMatrix(
         countData = countmatrix$table,
-        colData = coldata$table,
+        colData = colData$table,
         design = ~ 1
       )
       dds <- estimateSizeFactors(dds)

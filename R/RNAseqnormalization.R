@@ -1,4 +1,4 @@
-#' @title performs normalization on RNAseq data
+#' @title Performs normalization on RNAseq data
 #'
 #' @description
 #'
@@ -34,6 +34,7 @@ NormalizeRNAseqDataServer <- function(input, output, session, matrix = NULL) {
 
 
 
+  ns <- session$ns
 
 
 
