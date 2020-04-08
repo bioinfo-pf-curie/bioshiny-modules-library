@@ -29,6 +29,7 @@ ui <- dashboardPage(
     counts_path <- system.file("extdata", "rawcounts.csv", package = "BioshinyModules")
 
 
+    transformed <- reactiveValues(rlog = NULL, vts = NULL, rlog = NULL)
 
     metadata <- reactiveValues(table = read.table(metadata_path, header = TRUE, sep = ",",
                                                   row.names = 1)
@@ -43,12 +44,11 @@ ui <- dashboardPage(
     #                   countmatrix = counts,
     #                   colData = metadata)
 
-    observe({
 
-    transformed <- callModule(TransformRNAseqDataServer,"TransformData",session =session,
+
+transformed <- callModule(TransformRNAseqDataServer,"TransformData",session = session,
                               matrix = counts)
 
-    })
 
     output$Raw <- DT::renderDataTable(counts$table)
     #output$tpm <- renderText(renderPrint(print(dds$mydds)))
