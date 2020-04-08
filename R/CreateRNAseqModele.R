@@ -155,14 +155,14 @@ observeEvent(input$Build,{
 
 output$Group1 <- renderUI({
   tagList(
-                    selectInput(ns("Group1sel"),"Compute variables interactions ?", choices = unique(sampleplan$table[,input$var]),
+                    selectInput(ns("Group1sel"),"Group 1", choices = unique(sampleplan$table[,input$var]),
                                 selected= unique(sampleplan$table[,input$var])[1])
           )
  })
 
 output$Group2 <- renderUI({
           tagList(
-                    selectInput(ns("Group2sel"),"Compute variables interactions ?", choices  = unique(sampleplan$table[,input$var]),
+                    selectInput(ns("Group2sel"),"Group 2", choices  = unique(sampleplan$table[,input$var]),
                                 selected = unique(sampleplan$table[,input$var])[2] )
           )
 
