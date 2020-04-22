@@ -1,4 +1,4 @@
-#' @title Performs normalization on RNAseq data
+#' @title Performs normalization on RNAseq data ui part
 #'
 #' @description
 #'
@@ -34,7 +34,7 @@ TransformRNAseqDataUI <- function(id) {
 #' @param input,output,session standards \code{shiny} server arguments.
 #' @param header Does the file have a Header
 #' @param sep What is the file separator
-#'
+#' @title Performs normalization on RNAseq data server part
 #' @export
 #'
 #' @import GenomicFeatures

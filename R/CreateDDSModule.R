@@ -1,4 +1,4 @@
-#' @title Creates a DDS object for further analysis.
+#' @title Creates a DDS object for further analysis ui side
 #'
 #' @description
 #'
@@ -35,6 +35,7 @@ tagList(
 #'
 #' @export
 #'
+#' @title Creates a DDS object for further analysis server side
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML

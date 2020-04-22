@@ -1,4 +1,4 @@
-#' @title Modules getting a bioMaRt annotation from genes's list
+#' @title Modules getting a bioMaRt annotation from genes's list ui part
 #'
 #' @description
 #'
@@ -34,7 +34,7 @@ getAnnotationUI <- function(id) {
 #'
 #' @export
 #'
-#'
+#' @title Modules getting a bioMaRt annotation from genes's list server part
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
 #' @importFrom readxl read_excel

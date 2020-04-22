@@ -1,4 +1,4 @@
-#' @title Performs normalization on RNAseq data
+#' @title Performs normalization on RNAseq data ui side
 #'
 #' @description
 #'
@@ -27,6 +27,9 @@ NormalizeRNAseqDataUI <- function(id) {
 
 
 }
+
+#' @title Performs normalization on RNAseq data server side
+#' @param matrix a reactive values object containing a reactiveVal table, for exemple matrix$table
 
 
 

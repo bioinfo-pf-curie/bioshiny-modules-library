@@ -1,4 +1,4 @@
-#' @title Module for drawing PCA from counts matrix
+#' @title Module for drawing PCA from counts matrix ui part
 #'
 #' @description
 #'
@@ -131,7 +131,7 @@ DrawPCAUI2 <- function(id) {
 #'
 #' @export
 #'
-#'
+#' @title Module for drawing PCA from counts matrix server part
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
 #' @import pcaMethods

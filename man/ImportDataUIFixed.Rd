@@ -2,7 +2,7 @@
 % Please edit documentation in R/ChooseDataModuleFixedParameters.R
 \name{ImportDataUIFixed}
 \alias{ImportDataUIFixed}
-\title{Module for importing text of xls files}
+\title{Module for importing text of xls files ui part}
 \usage{
 ImportDataUIFixed(id, label = "Import Data")
 }

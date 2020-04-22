@@ -1,4 +1,4 @@
-#' @title Module for importing text of xls files
+#' @title Module for importing text of xls files ui part
 #'
 #' @description
 #'
@@ -40,7 +40,7 @@ ImportDataUI <- function(id, label = "Import Data") {
 #' @export
 #'
 #' @rdname module-chooseData
-#'
+#' @title Module for importing text of xls files server part
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
 #' @importFrom assertthat has_extension see_if

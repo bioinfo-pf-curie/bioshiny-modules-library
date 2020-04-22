@@ -1,4 +1,4 @@
-#' @title Check RNASeqdata for further analysis
+#' @title Check RNASeqdata for further analysis ui part
 #'
 #' @description
 #'
@@ -44,7 +44,7 @@ CreateModelUI <- function(id) {
   #'
   #' @export
   #'
-  #'
+  #' @title Check RNASeqdata for further analysis server part
   #' @importFrom shiny renderUI modalDialog observeEvent reactiveValues callModule observe icon
   #' @importFrom htmltools tags HTML
   #' @import limma

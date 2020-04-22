@@ -3,7 +3,7 @@
 \name{module-ImportData}
 \alias{module-ImportData}
 \alias{ImportDataUI}
-\title{Module for importing text of xls files}
+\title{Module for importing text of xls files ui part}
 \usage{
 ImportDataUI(id, label = "Import Data")
 }

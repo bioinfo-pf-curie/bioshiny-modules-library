@@ -2,7 +2,7 @@
 % Please edit documentation in R/RNAseqnormalization.R
 \name{NormalizeRNAseqDataUI}
 \alias{NormalizeRNAseqDataUI}
-\title{Performs normalization on RNAseq data}
+\title{Performs normalization on RNAseq data ui side}
 \usage{
 NormalizeRNAseqDataUI(id)
 }

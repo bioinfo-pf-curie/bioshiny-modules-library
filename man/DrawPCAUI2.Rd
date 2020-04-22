@@ -2,7 +2,7 @@
 % Please edit documentation in R/PCAModule2.R
 \name{DrawPCAUI2}
 \alias{DrawPCAUI2}
-\title{Module for drawing PCA from counts matrix}
+\title{Module for drawing PCA from counts matrix ui part}
 \usage{
 DrawPCAUI2(id)
 }

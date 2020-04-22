@@ -2,7 +2,7 @@
 % Please edit documentation in R/getAnnotationModule.R
 \name{getAnnotationUI}
 \alias{getAnnotationUI}
-\title{Modules getting a bioMaRt annotation from genes's list}
+\title{Modules getting a bioMaRt annotation from genes's list ui part}
 \usage{
 getAnnotationUI(id)
 }

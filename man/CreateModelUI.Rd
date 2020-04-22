@@ -2,7 +2,7 @@
 % Please edit documentation in R/CreateRNAseqModele.R
 \name{CreateModelUI}
 \alias{CreateModelUI}
-\title{Check RNASeqdata for further analysis}
+\title{Check RNASeqdata for further analysis ui part}
 \usage{
 CreateModelUI(id)
 }

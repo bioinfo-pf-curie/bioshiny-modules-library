@@ -1,4 +1,4 @@
-#' @title Module for importing text of xls files
+#' @title Module for importing text of xls files ui part
 #'
 #' @description
 #'
@@ -37,7 +37,7 @@ ImportDataUIFixed <- function(id, label = "Import Data") {
 #' @param sep What is the file separator
 #'
 #' @export
-#'
+#' @title Module for importing text of xls files server part
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML

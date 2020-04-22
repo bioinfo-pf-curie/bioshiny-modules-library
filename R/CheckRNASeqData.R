@@ -1,4 +1,4 @@
-#' @title Check RNASeqdata for further analysis
+#' @title Check RNASeqdata for further analysis ui part
 #'
 #' @description
 #'
@@ -32,7 +32,7 @@ CheckRNAseqDataUI <- function(id) {
 #' @param sep What is the file separator
 #'
 #' @export
-#'
+#' @title Check RNASeqdata for further analysis server part
 #'
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML

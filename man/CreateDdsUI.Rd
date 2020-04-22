@@ -2,7 +2,7 @@
 % Please edit documentation in R/CreateDDSModule.R
 \name{CreateDdsUI}
 \alias{CreateDdsUI}
-\title{Creates a DDS object for further analysis.}
+\title{Creates a DDS object for further analysis ui side}
 \usage{
 CreateDdsUI(id)
 }
