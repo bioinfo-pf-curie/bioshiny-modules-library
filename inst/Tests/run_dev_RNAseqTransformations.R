@@ -14,13 +14,10 @@ ui <- dashboardPage(
     dashboardHeader(title = "Data transformation Test"),
     dashboardSidebar(),
     dashboardBody(
-      #CreateDdsUI(id = "DDSRnaSeq"),
-      TransformRNAseqDataUI("TransformData"),
-       fluidRow(box(title = "Counts tables :",width =12,
-                    DT::dataTableOutput("Raw"),
-                    DT::dataTableOutput("rlog"))
-       ))
+      TransformRNAseqDataUI("TransformData")
+       )
     )
+
 
 
   server <- function(input, output, session) {
@@ -29,7 +26,7 @@ ui <- dashboardPage(
     counts_path <- system.file("extdata", "rawcounts.csv", package = "BioshinyModules")
 
 
-    transformed <- reactiveValues(rlog = NULL, vts = NULL, rlog = NULL)
+    Transformed <- reactiveValues(rlog = NULL, vts = NULL, rlog = NULL)
 
     metadata <- reactiveValues(table = read.table(metadata_path, header = TRUE, sep = ",",
                                                   row.names = 1)
@@ -40,20 +37,11 @@ ui <- dashboardPage(
     )
 
 
-    # dds <- callModule(CreateDdsServer, "DDSRnaSeq", session = session,
-    #                   countmatrix = counts,
-    #                   colData = metadata)
 
-
-
-transformed <- callModule(TransformRNAseqDataServer,"TransformData",session = session,
+Transformed <- callModule(TransformRNAseqDataServer,"TransformData",session = session,
                               matrix = counts)
 
 
-    output$Raw <- DT::renderDataTable(counts$table)
-    #output$tpm <- renderText(renderPrint(print(dds$mydds)))
-    output$rlog <- DT::renderDataTable(transformed$rlog)
-    #output$vst <- renderText(renderPrint(print(dds$mydds)))
 
 
   }

@@ -421,5 +421,6 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
 } # end of if !is.null(data)
 
+return(p)
 
 }

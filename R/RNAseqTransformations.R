@@ -19,15 +19,20 @@
 TransformRNAseqDataUI <- function(id) {
 
   ns <- NS(id)
-  selectInput(ns('method'), 'Choose a transformation method for your data',
+  tagList(
+  selectInput(ns('method'), 'Choose a transformation method to run on your data',
                choices = c('None'='NONE',
                            'Variance Stabilizing Transform (vst)'= 'vst' ,
                            'Regularized logarithm (rlog) - WARNING: this can take considerable time' = 'rlog',
                            "Transcripts per million (tpm)" = "tpm" ),
-               selected = 'NONE')
+               selected = 'NONE'),
+  selectInput(ns("ShowTransformed"),"Select a counts table to see", choices = c("Rawcounts",'TPM Transformed',
+                                                                            'vst Transformed',
+                                                                            "Rlog Transformed")),
+  fluidRow(DT::dataTableOutput(ns("Table")))
 
 
-
+) # end of TagList
 }
 
 
@@ -45,9 +50,20 @@ TransformRNAseqDataUI <- function(id) {
 TransformRNAseqDataServer <- function(input, output, session, dds = NULL, minlength = NULL, matrix = NULL) {
 
   ns <- session$ns
-  reactives <- reactiveValues(tpm = NULL, vst = NULL, rlog = NULL)
+  reactives <- reactiveValues(tpm = NULL, vst = NULL, rlog = NULL, raw = NULL)
 
-observeEvent(input$method,{
+
+
+
+observeEvent(matrix$table,priority = 10,{
+  reactives$raw <- matrix$table
+  reactives$tpm <-  NULL
+  reactives$vst <-  NULL
+  reactives$rlog <-  NULL
+})
+
+observe({
+
 
   withProgress(message = paste0('Counts data ',input$method, ' transformation'),
                detail = 'This may take a while...',
@@ -62,11 +78,16 @@ observeEvent(input$method,{
 
   } else if (input$method == "vst") {
 
+    incProgress(0.4)
+    reactives$vst <- vst(as.matrix(reactives$raw),blind=TRUE)
+    incProgress(0.4)
+
+
 
   } else if (input$method == "rlog"){
 
   incProgress(0.4)
-  reactives$rlog <- rlog(as.matrix(matrix$table),blind=TRUE)
+  reactives$rlog <- rlog(as.matrix(reactives$raw),blind=TRUE)
   incProgress(0.4)
 
 
@@ -74,6 +95,25 @@ observeEvent(input$method,{
 
   }) # end of withProgress
 }) # end of Observer
+
+
+observeEvent(c(input$ShowTransformed,reactives$raw),{
+
+  print(head(reactives$vst))
+  if (input$ShowTransformed == "Rawcounts"){
+    output$Table <- DT::renderDataTable(reactives$raw, options = list(scrollX=TRUE))
+
+  } else if (input$ShowTransformed == "TPM Transformed"){
+    output$Table <- DT::renderDataTable(reactives$tpm, options = list(scrollX=TRUE))
+
+  } else if (input$ShowTransformed == "vst Transformed"){
+    output$Table <- DT::renderDataTable(reactives$vst, options = list(scrollX=TRUE))
+
+  } else if (input$ShowTransformed == "Rlog Transformed"){
+    output$Table <- DT::renderDataTable(reactives$rlog, options = list(scrollX=TRUE))
+  }
+
+})
 
 return(reactives)
 

@@ -34,9 +34,10 @@ if (interactive()){
     )
 
 
+
     observe({
 
-      counts$table <- counts$table[1:300,]
+      counts$table <- counts$table[1:50,]
 
      heatmap <- callModule(ClusteringServer, id = "heatmapID", session = session,
                                     data = counts, metadata =  metadata, printRows = FALSE)
