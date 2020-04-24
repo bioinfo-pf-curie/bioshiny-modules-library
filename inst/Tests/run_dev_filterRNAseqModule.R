@@ -39,8 +39,6 @@ if (interactive()){
 
     })
 
-    output$filtered_counts <- DT::renderDataTable(filtered_counts$DataFiltered)
-
 
   }
   shinyApp(ui, server)

@@ -35,7 +35,7 @@ FilterRNAUI <- function(id){
         id = ns("pbar"), value = 100,
         total = 100, display_pct = TRUE
       ),
-      tags$p("Filtered data:"),
+      tags$h1("Filtered data table :"),
       DT::dataTableOutput(outputId = ns("table")),
      ) # end of column
     ) # end of FluidRow
@@ -88,7 +88,7 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
     )
 })
 
-    output$table <- DT::renderDT({
+    output$table <- DT::renderDataTable({
       return$DataFiltered
     }, options = list(pageLength = 5))
 

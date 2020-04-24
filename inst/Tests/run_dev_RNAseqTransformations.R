@@ -37,10 +37,23 @@ ui <- dashboardPage(
     )
 
 
+ Transformed <- callModule(TransformRNAseqDataServer,"TransformData",session = session,
+                               matrix = counts)
 
-Transformed <- callModule(TransformRNAseqDataServer,"TransformData",session = session,
-                              matrix = counts)
+#gtf_path <- system.file("extdata", "gencode.v19.annotation.sorted.gtf", package = "PdxAppPackage")
 
+
+#Transformed <- callModule(TransformRNAseqDataServer,"TransformData",session = session,
+#                          matrix = counts, gtf_path = gtf_path)
+
+observe({
+print("VST")
+print(Transformed$vst)
+print("TPM")
+print(Transformed$tpm)
+print("Rlog")
+print(Transformed$rlog)
+})
 
 
 

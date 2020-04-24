@@ -10,7 +10,8 @@ TransformRNAseqDataServer(
   session,
   dds = NULL,
   minlength = NULL,
-  matrix = NULL
+  matrix = NULL,
+  gtf_path = NULL
 )
 }
 \arguments{

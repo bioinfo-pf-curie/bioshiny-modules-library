@@ -13,7 +13,7 @@
 #'
 #'
 #' @importFrom htmltools tagList tags singleton
-#' @importFrom shiny NS actionButton icon uiOutput
+#' @importFrom shiny NS actionButton icon uiOutput showModal modalDialog
 
 
 TransformRNAseqDataUI <- function(id) {
@@ -45,15 +45,13 @@ TransformRNAseqDataUI <- function(id) {
 #' @import GenomicFeatures
 #' @importFrom shiny showModal modalDialog observeEvent reactiveValues callModule observe icon
 #' @import DESeq2
+#' @import rtracklayer
 
 
-TransformRNAseqDataServer <- function(input, output, session, dds = NULL, minlength = NULL, matrix = NULL) {
+TransformRNAseqDataServer <- function(input, output, session, dds = NULL, minlength = NULL, matrix = NULL, gtf_path = NULL) {
 
   ns <- session$ns
   reactives <- reactiveValues(tpm = NULL, vst = NULL, rlog = NULL, raw = NULL)
-
-
-
 
 observeEvent(matrix$table,priority = 10,{
   reactives$raw <- matrix$table
@@ -70,11 +68,26 @@ observe({
                value = 0,
                {
 
+  if(!is.null(reactives$raw)){
+
   if (input$method == "tpm"){
 
-    #txdb <-
-    #transformed <- matrix$table
-    # How to deal with transcript length ?
+    if (!is.null(gtf_path)){
+
+    ExonicSizes <- getExonicGeneSize(gtf_path)
+    reactives$tpm <- getTPM(reactives$raw,ExonicSizes)
+
+    } else {
+
+      showModal(modalDialog(
+        title = "Missing GTF file",
+        "TPM transformation require a GTF file, please provide a path to the Module",
+        easyClose = TRUE
+      ))
+
+
+    }
+
 
   } else if (input$method == "vst") {
 
@@ -92,6 +105,8 @@ observe({
 
 
   }
+
+  } # enf of isnulrawdata
 
   }) # end of withProgress
 }) # end of Observer
@@ -115,7 +130,54 @@ observeEvent(c(input$ShowTransformed,reactives$raw),{
 
 })
 
-return(reactives)
+##### Usefull function ############
 
+## getTPM
+## Calculate TPM values from a gene expression matrix and a gtf file
+## x : matrix of counts
+## exonic.gene.size : vector of exonic sizes per gene. If not provided, gtf.in is used to build it
+## gtf.in : path to gtf file
+## Details : see http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/ for differences between RPKM and TPM
+
+getTPM <- function(x, exonic.gene.sizes=NULL, gtf.in=NULL){
+
+  stopifnot(require(GenomicFeatures))
+
+  ## First, import the GTF-file that you have also used as input for htseq-count
+  if (is.null(exonic.gene.sizes)){
+    if (is.null(gtf.in))
+      stop("Unable to calculate gene size")
+    exonic.gene.sizes <- getExonicGeneSize(gtf.in)
+  }
+
+  if (length(setdiff(rownames(x), names(exonic.gene.sizes)))>0){
+    warning(length(setdiff(rownames(x), names(exonic.gene.sizes))), " genes from table were not found in the gtf file ...")
+  }
+
+  exonic.gene.sizes <- exonic.gene.sizes[rownames(x)]
+
+  ## Calculate read per kilobase
+  rpk <- x * 10^3/matrix(exonic.gene.sizes, nrow=nrow(x), ncol=ncol(x), byrow=FALSE)
+  ## Then normalize by lib size
+  tpm <- rpk *  matrix(10^6 / colSums(rpk, na.rm=TRUE), nrow=nrow(rpk), ncol=ncol(rpk), byrow=TRUE)
+
+  return(round(tpm,2))
+}##getTPM
+
+
+## getExonicGeneSize
+## Calcule the exons size per gene for RPMKM/TPM normalization
+## gtf.in : path to gtf file
+getExonicGeneSize <- function(gtf.in){
+  stopifnot(require(GenomicFeatures))
+  txdb <- makeTxDbFromGFF(gtf.in,format="gtf")
+  ## then collect the exons per gene id
+  exons.list.per.gene <- exonsBy(txdb,by="gene")
+  ## then for each gene, reduce all the exons to a set of non overlapping exons, calculate their lengths (widths) and sum then
+  exonic.gene.sizes <- sum(width(reduce(exons.list.per.gene)))
+  return(exonic.gene.sizes)
+}## getExonicGeneSize
+
+return(reactives)
 
 }
