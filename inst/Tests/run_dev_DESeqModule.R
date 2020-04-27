@@ -8,21 +8,24 @@ library(shiny)
 import::from(shinydashboard,box, dashboardPage,dashboardSidebar,dashboardBody,dashboardHeader)
 
 
-
 if (interactive()){
 
-ui <- dashboardPage(
-          dashboardHeader(title = "Creates model Test"),
-          dashboardSidebar(),
-          dashboardBody(
-             fluidRow(CreateModelUI("Design")),
-             fluidRow(box(title = "Contrasts matrix :",width =12,
-                 DT::dataTableOutput("contrast"))),
-             DT::dataTableOutput("design")
-                       )
-                   )
+  ui <- dashboardPage(
+    dashboardHeader(title = "Creates model Test"),
+    dashboardSidebar(),
+    dashboardBody(
+      fluidRow(CreateModelUI("Design"),
+      fluidRow(box(title = "Contrasts matrix :",width =12,
+                   DT::dataTableOutput("contrast"),
+                    DT::dataTableOutput("design"))),
+      DEAUI(id = "DEA"))#,
+     #textOutput("dds")
+      # fluidRow(box(title = "Contrasts matrix :",width =12,
+      #              DT::dataTableOutput("contrast")))
+    )
+  )
 
-server <- function(input, output, session) {
+  server <- function(input, output, session) {
 
     metadata_path <- system.file("extdata", "metadata.csv", package = "BioshinyModules")
     counts_path <- system.file("extdata", "rawcounts.csv", package = "BioshinyModules")
@@ -31,15 +34,15 @@ server <- function(input, output, session) {
 
     metadata <- reactiveValues(table = read.table(metadata_path, header = TRUE, sep = ",",
                                                   row.names = 1)
-                               )
+    )
     counts <- reactiveValues(table = read.table(counts_path, header = TRUE, sep = ",",
                                                 row.names = 1)
-                             )
-
+    )
 
     Model <- callModule(CreateModelServer, "Design",
                         sampleplan = metadata,
                         matrix = counts)
+
 
     output$contrast <- DT::renderDataTable(
 
@@ -50,6 +53,17 @@ server <- function(input, output, session) {
 
       as.data.frame(Model$design)
     )
+
+
+observe({
+
+    DEA <- callModule(DEAServer, "DEA", session = session,
+                      countmatrix = counts,
+                      Model = Model)
+
+})
+
+    #output$dds <- renderText(renderPrint(print(dds$mydds)))
 
 
   }

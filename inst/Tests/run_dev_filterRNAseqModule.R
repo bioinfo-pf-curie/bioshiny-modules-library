@@ -32,13 +32,16 @@ if (interactive()){
                                                 row.names = 1)
     )
 
-    observe({
+
 
     filtered_counts <- callModule(FilterRNAServer, id = "filtRnaSeq", session = session,
                        data = counts)
 
-    })
-
+  observe({
+    if(exists("filtered_counts")){
+    print(filtered_counts$DataFiltered)
+    }
+  })
 
   }
   shinyApp(ui, server)

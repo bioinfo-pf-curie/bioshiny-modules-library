@@ -44,6 +44,9 @@ if (interactive()){
     output$Table <- DT::renderDataTable(Rawdata$table, options = list(scrollX=TRUE))
     output$Metadata <- DT::renderDataTable(Metadata$table, options = list(scrollX=TRUE))
 
+    observe({
+    print(Rawdata$name)
+    })
   }
   shinyApp(ui, server)
 }

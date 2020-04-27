@@ -58,6 +58,7 @@ ImportDataServerFixed <- function(input, output, session, header = NULL, sep  = 
    if ( ext == 'txt') {
 
      data$table <- read.table(infile$datapath, header = header, sep = sep, row.names = row.names)
+     data$name <- infile$name
 
    } else if (ext == "xls"
               | ext == "xlsx"){

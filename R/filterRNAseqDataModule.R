@@ -60,42 +60,47 @@ FilterRNAUI <- function(id){
 FilterRNAServer <- function(input, output, session, data = NULL) {
 
   ns <- session$ns
-  return <- reactiveValues(DataFiltered = NULL)
+  returns <- reactiveValues(DataFiltered = NULL)
 
-  if (!is.null(data)){
 
-  rawdata =  reactiveValues(table = data$table)
 
   observeEvent(c(data$table,
                  input$TPM_mean,
                  input$TPM_sum),{
+
+  if (!is.null(data$table)){
+  rawdata <- reactiveValues(table = data$table)
   rawdata$table[,"TPM_sum"] <- rowSums(rawdata$table)
   rawdata$table[,"TPM_mean"] <- rowMeans(rawdata$table[,-ncol(rawdata$table)])
-  return$DataFiltered <- rawdata$table[which(rawdata$table[,'TPM_sum'] >= input$TPM_sum),]
-  return$DataFiltered <- return$DataFiltered[which(return$DataFiltered[,'TPM_mean'] >= input$TPM_mean),]
-  return$DataFiltered <- return$DataFiltered[,-c(ncol(return$DataFiltered),
-                                                 ncol(return$DataFiltered) - 1)
+  returns$DataFiltered <- rawdata$table[which(rawdata$table[,'TPM_sum'] >= input$TPM_sum),]
+  returns$DataFiltered <- returns$DataFiltered[which(returns$DataFiltered[,'TPM_mean'] >= input$TPM_mean),]
+  returns$DataFiltered <- returns$DataFiltered[,-c(ncol(returns$DataFiltered),
+                                                 ncol(returns$DataFiltered) - 1)
                                              ]
+
+  #return(returns)
+  } # end of if
+
 
   })
 
 
-  observeEvent(return$DataFiltered, {
+  observeEvent(returns$DataFiltered, {
     updateProgressBar(
       session = session, id = "pbar",
-      value = nrow(return$DataFiltered), total = nrow(data$table),
+      value = nrow(returns$DataFiltered), total = nrow(data$table),
       title = "Number of features after filetering step :"
     )
 })
 
     output$table <- DT::renderDataTable({
-      return$DataFiltered
+      returns$DataFiltered
     }, options = list(pageLength = 5))
 
 
-  #}) # end of observer
-  } # end of if
+ # end of observer
 
-  return(return)
+
+  return(returns)
 }
 

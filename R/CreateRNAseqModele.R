@@ -105,9 +105,13 @@ observeEvent(input$Build,{
     design <- model.matrix(reactives$formula, data=sampleplan$table)
     rownames(design) <- colnames(matrix$table)
     colnames(design) <- make.names(colnames(design))
+
+
     contrast <-makeContrasts(contrasts = paste0(paste0(input$var,input$Group1sel),"-",(paste0(input$var,input$Group2sel))) ,
                               levels=design)
+
     reactives$contrast <- contrast
+    reactives$design <- design
 
       }
     }
