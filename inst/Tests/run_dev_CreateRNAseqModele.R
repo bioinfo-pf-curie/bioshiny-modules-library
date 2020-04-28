@@ -17,8 +17,9 @@ ui <- dashboardPage(
           dashboardBody(
              fluidRow(CreateModelUI("Design")),
              fluidRow(box(title = "Contrasts matrix :",width =12,
-                 DT::dataTableOutput("contrast"))),
-             DT::dataTableOutput("design")
+                 column(DT::dataTableOutput("contrast")))
+                 ),
+                column(DT::dataTableOutput("design"))
                        )
                    )
 

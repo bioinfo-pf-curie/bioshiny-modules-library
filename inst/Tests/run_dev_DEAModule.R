@@ -14,7 +14,11 @@ if (interactive()){
     dashboardHeader(title = "Creates model Test"),
     dashboardSidebar(),
     dashboardBody(
-      DEAUI(id = "DEA")#,
+      fluidRow(CreateModelUI("Design"),
+      fluidRow(box(title = "Contrasts matrix :",width =12,
+                   DT::dataTableOutput("contrast"),
+                    DT::dataTableOutput("design"))),
+      DEAUI(id = "DEA"))#,
      #textOutput("dds")
       # fluidRow(box(title = "Contrasts matrix :",width =12,
       #              DT::dataTableOutput("contrast")))
@@ -35,11 +39,29 @@ if (interactive()){
                                                 row.names = 1)
     )
 
+    Model <- callModule(CreateModelServer, "Design",
+                        sampleplan = metadata,
+                        matrix = counts)
+
+
+    output$contrast <- DT::renderDataTable(
+
+      as.data.frame(Model$contrast)
+    )
+
+    output$design <- DT::renderDataTable(
+
+      as.data.frame(Model$design)
+    )
+
+
+observe({
 
     DEA <- callModule(DEAServer, "DEA", session = session,
                       countmatrix = counts,
-                      colData = metadata)
+                      Model = Model)
 
+})
 
     #output$dds <- renderText(renderPrint(print(dds$mydds)))
 
