@@ -42,7 +42,7 @@ tagList(
                h4("All genes :",style="padding-left:20px"),
                column(width =12,DT::dataTableOutput(ns('results_table'))),
                tags$br(),
-               h4("   Upp regulated genes :",style="padding-left:20px"),
+               h4("Upp regulated genes :",style="padding-left:20px"),
                column(width = 12,DT::dataTableOutput(ns('up_table'))),
                tags$br(),
                h4("Down regulated genes :",style="padding-left:20px"),

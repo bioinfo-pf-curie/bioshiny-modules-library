@@ -34,13 +34,14 @@ if (interactive()){
     )
 
 
+Clusterdata <- reactiveValues(table = NULL)
 
     observe({
 
-      counts$table <- counts$table[1:50,]
+    Clusterdata$table <- counts$table[1:50,]
 
      heatmap <- callModule(ClusteringServer, id = "heatmapID", session = session,
-                                    data = counts, metadata =  metadata, printRows = FALSE)
+                                    data = Clusterdata, metadata =  metadata, printRows = FALSE)
 
     })
 

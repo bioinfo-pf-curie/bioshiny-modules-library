@@ -95,7 +95,7 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
 
     output$table <- DT::renderDataTable({
       returns$DataFiltered
-    }, options = list(pageLength = 5))
+    }, options = list(pageLength = 10,scrollX = TRUE))
 
 
  # end of observer
