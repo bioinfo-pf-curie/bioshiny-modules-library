@@ -19,12 +19,18 @@ ClusteringUI <- function(id){
   ns <- NS(id)
   #ui <- shiny::shinyUI(
     shiny::fluidPage(
+      tags$style(type='text/css', ".selectize-input { font-size: 12px; line-height: 13px;width: 105px}
+                 .selectize-dropdown { font-size: 12px; line-height: 13px; }
+                 .form-group, .selectize-control {margin-left:-10px;max-height: 100px !important;}
+                 .box-body {
+          padding-bottom: 0px;
+      }"),
       shiny::sidebarLayout(
-        shiny::sidebarPanel(
+        shiny::sidebarPanel(width = 5,
           htmltools::h4('Data'),
           #shiny::uiOutput(ns('data')),
           shiny::checkboxInput(ns('showSample'),'Subset Data'),
-          shiny::conditionalPanel('input.showSample',shiny::uiOutput(ns('sample'))),
+          shiny::conditionalPanel(ns('input.showSample'),shiny::uiOutput(ns('sample'))),
           # br(),
           htmltools::hr(),htmltools::h4('Data Preprocessing'),
           shiny::column(width=4,shiny::selectizeInput(ns('transpose'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
@@ -49,16 +55,16 @@ ClusteringUI <- function(id){
           shiny::column(3,shiny::checkboxInput(ns('showMargin'),'Layout')),
           shiny::column(3,shiny::checkboxInput(ns('showDendo'),'Dendrogram')),
           htmltools::hr(),
-          shiny::conditionalPanel('input.showColor==1',ns = ns,
+          shiny::conditionalPanel(ns('input.showColor==1'),ns = ns,
                                   htmltools::hr(),
                                   htmltools::h4('Color Manipulation'),
                                   shiny::uiOutput(ns('colUI')),
                                   shiny::sliderInput(ns("ncol"), "Set Number of Colors", min = 1, max = 256, value = 256),
                                   shiny::checkboxInput(ns('colRngAuto'),'Auto Color Range',value = TRUE),
-                                  shiny::conditionalPanel('!input.colRngAuto',shiny::uiOutput(ns('colRng')))
+                                  shiny::conditionalPanel(ns('!input.colRngAuto'),shiny::uiOutput(ns('colRng')))
           ),
 
-          shiny::conditionalPanel('input.showDendo==1',ns = ns,
+          shiny::conditionalPanel(ns('input.showDendo==1'),ns = ns,
                                   htmltools::hr(),
                                   htmltools::h4('Dendrogram Manipulation'),
                                   shiny::selectInput(ns('dendrogram'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both'),
@@ -66,7 +72,7 @@ ClusteringUI <- function(id){
                                   shiny::sliderInput(ns('branches_lwd'),'Dendrogram Branch Width',value = 0.6,min=0,max=5,step = 0.1)
           ),
 
-          shiny::conditionalPanel('input.showMargin==1',ns = ns,
+          shiny::conditionalPanel(ns('input.showMargin==1'),ns = ns,
                                   htmltools::hr(),
                                   htmltools::h4('Widget Layout'),
                                   shiny::column(4,shiny::textInput(ns('main'),'Title','')),
@@ -79,8 +85,7 @@ ClusteringUI <- function(id){
           )
           #))
         ),
-
-        shiny::mainPanel(
+        shiny::mainPanel(width = 7,
           shiny::tabsetPanel(
             shiny::tabPanel("Heatmaply",
                             htmltools::tags$a(id = 'downloadData', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, shiny::icon("clone"), 'Download Heatmap as HTML'),
@@ -120,6 +125,7 @@ ClusteringUI <- function(id){
 #' @importFrom rmarkdown pandoc_available pandoc_self_contained_html
 #' @importFrom viridisLite viridis
 #' @importFrom viridis magma plasma inferno
+#' @importFrom Seurat FindVariableFeatures
 
 
 # choices = c('Vidiris (Sequential)'="viridis",
@@ -143,23 +149,18 @@ ClusteringUI <- function(id){
 ClusteringServer <- function(input, output, session, data = NULL, metadata = NULL,printRows = FALSE) {
 
   ns <- session$ns
-  reactives <- reactiveValues(obj =  data$table, selData = data$table, metadata = metadata$table)
+  reactives <- reactiveValues(obj =  data$table, metadata = metadata$table,variableFeatures = FindVariableFeatures(data$table, selection.method = "vst"))
+  reactives2 <- reactiveValues(selData = data$table)
+
 
   if (!is.null(data)){
-  # output$data=shiny::renderUI({
-  #   d<-names(reactives$obj)
-  #   selData=d[1]
-  #   shiny::selectInput("data","Select Data",d,selected = selData)
-  # })
 
 
-  # data.sel=shiny::eventReactive(input$data,{
-  #   as.data.frame(reactives$obj[[input$data]])
-  # })
+   ## End of was commented
 
-  shiny::observeEvent(reactives$selData,{
+  shiny::observeEvent(reactives2$selData,{
     output$annoVars<-shiny::renderUI({
-      data.in=reactives$selData
+      data.in=reactives2$selData
       NM=NULL
 
       if(any(sapply(data.in,class)=='factor')){
@@ -171,15 +172,23 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
                     )
     })
 
+
+  }) # enf of observeEvent
     #Sampling UI ----
+
+    subdata <- reactiveValues(rows = nrow(data$table), cols = names(data$table))
+
+
     output$sample<-shiny::renderUI({
       list(
         shiny::column(4,shiny::textInput(inputId = ns('setSeed'),label = 'Seed',value = sample(1:10000,1))),
-        shiny::column(4,shiny::numericInput(inputId = ns('selRows'),label = 'Number of Rows',min=1,max=pmin(500,nrow(reactives$selData)),value = pmin(500,nrow(reactives$selData)))),
-        shiny::column(4,shiny::selectizeInput(ns('selCols'),'Columns Subset',choices = names(reactives$selData),multiple=TRUE))
+        shiny::column(4,shiny::numericInput(inputId = ns('selRows'),label = 'Number of Rows',min=1,max=pmin(500,subdata$rows),value = pmin(500,subdata$rows))),
+        shiny::column(4,shiny::selectizeInput(ns('selCols'),'Columns Subset',choices = subdata$cols,multiple=TRUE))
       )
     })
-  })
+  #}) # Intitial end of observeEvent
+
+
 
   output$colUI<-shiny::renderUI({
     colSel='Vidiris'
@@ -208,12 +217,12 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
                           selected=colSel)
   })
 
-  shiny::observeEvent({reactives$selData},{
+  shiny::observeEvent({reactives2$selData},{
     output$colRng=shiny::renderUI({
 
-      rng=range(reactives$selData,na.rm = TRUE)
+      rng=range(reactives2$selData,na.rm = TRUE)
 
-      n_data = nrow(reactives$selData)
+      n_data = nrow(reactives2$selData)
 
       min_min_range = ifelse(input$transform_fun=='cor',-1,-Inf)
       min_max_range = ifelse(input$transform_fun=='cor',1,rng[1])
@@ -234,18 +243,55 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
   })
 
 
+  observeEvent(c(input$setSeed,
+                 input$selRows,
+                 input$selCols),ignoreInit = TRUE,priority = 10, {
+
+
+                   variableFeaturesranked <- rownames(reactives$variableFeatures[order(-reactives$variableFeatures$vst.variance.standardized),])
+
+                   if(input$showSample){
+                    data.in <- reactives$obj
+                     if(!is.null(input$selRows)){
+                       print("selrow not nut")
+                       set.seed(input$setSeed)
+                       if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
+                         print("morethan2selrow and selrows < datain")
+                         # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
+                         if(length(input$selCols)<=1) {
+                           print("input$selCols)<=1")
+                           data.in=data.in[variableFeaturesranked[1:input$selRows],]}
+                         if(length(input$selCols)>1) {
+                           print("input$selCols)>1")
+                           data.in=data.in[variableFeaturesranked[1:input$selRows],input$selCols]}
+                       }
+                     }
+                    reactives2$selData <- data.in
+                   }
+    }) # end of observer
+
+
+
+
   interactiveHeatmap<- shiny::reactive({
-    data.in=reactives$selData
+    data.in <- reactives2$selData
     if(input$showSample){
       if(!is.null(input$selRows)){
+        print("selrow not nut")
         set.seed(input$setSeed)
         if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
+          print("morethan2selrow and selrows < datain")
           # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
-          if(length(input$selCols)<=1) data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),]
-          if(length(input$selCols)>1) data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),input$selCols]
+          if(length(input$selCols)<=1) {
+            print("input$selCols)<=1")
+            data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),]}
+          if(length(input$selCols)>1) {
+            print("input$selCols)>1")
+            data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),input$selCols]}
         }
       }
     }
+
 
     if( length(input$annoVar) > 0 ){
 
@@ -342,13 +388,15 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
   })
 
-  shiny::observeEvent(reactives$selData,{
+
+
+  shiny::observeEvent(reactives2$selData,{
     output$heatout <- plotly::renderPlotly({
       interactiveHeatmap()
     })
   })
 
-  output$tables=shiny::renderDataTable(reactives$selData#,server = TRUE,filter='top',
+  output$tables=shiny::renderDataTable(reactives2$selData#,server = TRUE,filter='top',
                                        #                               extensions = c('Scroller','FixedHeader','FixedColumns','Buttons','ColReorder'),
                                        #                               options = list(
                                        #                                 dom = 't',

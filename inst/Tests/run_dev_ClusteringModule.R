@@ -14,7 +14,9 @@ if (interactive()){
     dashboardHeader(title = "Clustering Module Test"),
     dashboardSidebar(),
     dashboardBody(
+      fluidRow(
       ClusteringUI(id = "heatmapID")
+      ) # end of FluidPage
     )
   )
 
@@ -23,7 +25,6 @@ if (interactive()){
 
     metadata_path <- system.file("extdata", "metadata.csv", package = "BioshinyModules")
     counts_path <- system.file("extdata", "rawcounts.csv", package = "BioshinyModules")
-
 
 
     metadata <- reactiveValues(table = read.table(metadata_path, header = TRUE, sep = ",",
