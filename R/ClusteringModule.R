@@ -125,7 +125,7 @@ ClusteringUI <- function(id){
 #' @importFrom rmarkdown pandoc_available pandoc_self_contained_html
 #' @importFrom viridisLite viridis
 #' @importFrom viridis magma plasma inferno
-#' @importFrom Seurat FindVariableFeatures
+#' @importFrom SummarizedExperiment assay
 
 
 # choices = c('Vidiris (Sequential)'="viridis",
@@ -146,10 +146,11 @@ ClusteringUI <- function(id){
 #             'Heat (Sequential)'='heat.colors',
 #             'Grey (Sequential)'='grey.colors'),
 
-ClusteringServer <- function(input, output, session, data = NULL, metadata = NULL,printRows = FALSE) {
+ClusteringServer <- function(input, output, session, data = NULL, metadata = NULL,printRows = FALSE, vst = FALSE) {
 
   ns <- session$ns
-  reactives <- reactiveValues(obj =  data$table, metadata = metadata$table,variableFeatures = FindVariableFeatures(data$table, selection.method = "vst"))
+
+  reactives <- reactiveValues(obj =  data$table, metadata = metadata$table,variableFeatures = genefilter::rowVars(vst))
   reactives2 <- reactiveValues(selData = data$table)
 
 
@@ -248,7 +249,8 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
                  input$selCols),ignoreInit = TRUE,priority = 10, {
 
 
-                   variableFeaturesranked <- rownames(reactives$variableFeatures[order(-reactives$variableFeatures$vst.variance.standardized),])
+                   variableFeaturesranked <- order(reactives$variableFeatures,
+                                       decreasing=TRUE)
 
                    if(input$showSample){
                     data.in <- reactives$obj
