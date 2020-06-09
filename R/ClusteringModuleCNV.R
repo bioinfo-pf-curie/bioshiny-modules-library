@@ -17,8 +17,9 @@
 ClusteringUICNV <- function(id){
 
   ns <- NS(id)
-  ui <- shiny::shinyUI(
+  #ui <- shiny::shinyUI(
     shiny::fluidPage(
+      tagList(
       tags$style(type='text/css', ".selectize-input { font-size: 12px; line-height: 13px;width: 105px}
                  .selectize-dropdown { font-size: 12px; line-height: 13px; }
                  .form-group, .selectize-control {margin-left:-10px;max-height: 100px !important;}
@@ -27,10 +28,16 @@ ClusteringUICNV <- function(id){
       }"),
       shiny::sidebarLayout(
         shiny::sidebarPanel(width = 5,
-          htmltools::h4('Data'),
+          #htmltools::h4('Clustering data'),
+          #fluidPage(
+          #column(width = 12,
+                 fluidRow(
+                 box(title = 'Clustering data',collapsible = TRUE,collapsed = FALSE,width = NULL, status = "primary",
+                     solidHeader = TRUE,
           #shiny::uiOutput(ns('data')),
+          fluidPage(
           shiny::checkboxInput(ns('showSampleCNV'),'Subset Data'),
-          shiny::conditionalPanel(ns('input.showSampleCNV'),shiny::uiOutput(ns('sampleCNV'))),
+          shiny::conditionalPanel("input.showSampleCNV ==1",ns =ns,hr(), shiny::uiOutput(ns('sampleCNV'))),
           # br(),
           htmltools::hr(),htmltools::h4('Data Preprocessing'),
           shiny::column(width=4,shiny::selectizeInput(ns('transposeCNV'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
@@ -38,52 +45,19 @@ ClusteringUICNV <- function(id){
           shiny::uiOutput(ns('annoVarsCNV')),
 
           htmltools::br(),htmltools::hr(),htmltools::h4('Row dendrogram'),
-          shiny::column(width=6,shiny::selectizeInput(ns("distFun_rowCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
-          shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_rowCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
+          #shiny::column(width=6,shiny::selectizeInput(ns("distFun_rowCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+          #shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_rowCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
           shiny::column(width=12,shiny::sliderInput(ns("rCNV"), "Number of Clusters", min = 1, max = 15, value = 2)),
-          #column(width=4,numericInput("r", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
 
           htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-          shiny::column(width=6,shiny::selectizeInput(ns("distFun_colCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
-          shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_colCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
+          #shiny::column(width=6,shiny::selectizeInput(ns("distFun_colCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+          #shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_colCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
           shiny::column(width=12,shiny::sliderInput(ns("cCNV"), "Number of Clusters", min = 1, max = 15, value = 2)),
           #column(width=4,numericInput("c", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
-
-          htmltools::br(),htmltools::hr(),  htmltools::h4('Additional Parameters'),
-
-          shiny::column(3,shiny::checkboxInput(ns('showColorCNV'),'Color')),
-          shiny::column(3,shiny::checkboxInput(ns('showMarginCNV'),'Layout')),
-          shiny::column(3,shiny::checkboxInput(ns('showDendoCNV'),'Dendrogram')),
-          htmltools::hr(),
-          shiny::conditionalPanel(ns('input.showColorCNV==1'),ns = ns,
-                                  htmltools::hr(),
-                                  htmltools::h4('Color Manipulation'),
-                                  shiny::uiOutput(ns('colUICNV')),
-                                  shiny::sliderInput(ns("ncolCNV"), "Set Number of Colors", min = 1, max = 256, value = 256),
-                                  shiny::checkboxInput(ns('colRngAutoCNV'),'Auto Color Range',value = TRUE),
-                                  shiny::conditionalPanel(ns('!input.colRngAutoCNV'),shiny::uiOutput(ns('colRngCNV')))
-          ),
-
-          shiny::conditionalPanel(ns('input.showDendoCNV==1'),ns = ns,
-                                  htmltools::hr(),
-                                  htmltools::h4('Dendrogram Manipulation'),
-                                  shiny::selectInput(ns('dendrogramCNV'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both'),
-                                  shiny::selectizeInput(ns("seriationCNV"), "Seriation", c(OLO="OLO",GW="GW",Mean="mean",None="none"),selected = 'OLO'),
-                                  shiny::sliderInput(ns('branches_lwdCNV'),'Dendrogram Branch Width',value = 0.6,min=0,max=5,step = 0.1)
-          ),
-
-          shiny::conditionalPanel(ns('input.showMarginCNV==1'),ns = ns,
-                                  htmltools::hr(),
-                                  htmltools::h4('Widget Layout'),
-                                  shiny::column(4,shiny::textInput(ns('mainCNV'),'Title','')),
-                                  shiny::column(4,shiny::textInput(ns('xlabCNV'),'X Title','')),
-                                  shiny::column(4,shiny::textInput(ns('ylabCNV'),'Y Title','')),
-                                  shiny::sliderInput(ns('row_text_angleCNV'),'Row Text Angle',value = 0,min=0,max=180),
-                                  shiny::sliderInput(ns('column_text_angleCNV'),'Column Text Angle',value = 45,min=0,max=180),
-                                  shiny::sliderInput(ns("lCNV"), "Set Margin Width", min = 0, max = 200, value = 130),
-                                  shiny::sliderInput(ns("bCNV"), "Set Margin Height", min = 0, max = 200, value = 40)
-          )
-          #))
+          ) # end of FluidPage
+          ) # end of Box
+          ) # end of fluidRow
+          #) # end of column
         ),
         shiny::mainPanel(width = 7,
           shiny::tabsetPanel(
@@ -91,15 +65,74 @@ ClusteringUICNV <- function(id){
                             htmltools::tags$a(id = 'downloadDataCNV', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, shiny::icon("clone"), 'Download Heatmap as HTML'),
                             htmltools::tags$head(htmltools::tags$style(".mybutton{color:white;background-color:blue;} .skin-black .sidebar .mybutton{color: green;}") ),
                             plotly::plotlyOutput(ns("heatoutCNV"),height=paste0(500,'px'))
+
             ),
             shiny::tabPanel("Data",
                             shiny::dataTableOutput(ns('tablesCNV'))
             )
-          )
+          ),
+          column(width = 12,
+          br(),
+          br(),
+          fluidRow(
+          box(title = "Additionnal Parameters", collapsible = TRUE, collapsed = TRUE, status = "primary", width = NULL,
+                                   solidHeader = TRUE,
+                                   fluidPage(
+                                     htmltools::br(),htmltools::hr(),
+                                     #htmltools::h4('Additional Parameters'),
+                                     #htmltools::br(),htmltools::hr(),
+                                     htmltools::h4('Column dendrogram'),
+                                     shiny::column(3,shiny::checkboxInput(ns('showColorCNV'),'Color')),
+                                     shiny::column(3,shiny::checkboxInput(ns('showMarginCNV'),'Layout')),
+                                     shiny::column(3,shiny::checkboxInput(ns('showDendoCNV'),'Dendrogram')),
+                                     htmltools::hr(),
+                                     shiny::conditionalPanel('input.showColorCNV==1',ns = ns,
+                                                             htmltools::hr(),
+                                                             htmltools::h4('Color Manipulation'),
+                                                             shiny::uiOutput(ns('colUICNV')),
+                                                             shiny::sliderInput(ns("ncolCNV"), "Set Number of Colors", min = 1, max = 256, value = 256),
+                                                             shiny::checkboxInput(ns('colRngAutoCNV'),'Auto Color Range',value = TRUE),
+                                                             shiny::conditionalPanel('!input.colRngAutoCNV',shiny::uiOutput(ns('colRngCNV')))
+                                                             #uiOutput("colorsUI")
+                                     ),
+
+                                     shiny::conditionalPanel('input.showDendoCNV==1',ns = ns,
+                                                             htmltools::hr(),
+                                                             htmltools::h4('Dendrogram Manipulation'),
+                                                             shiny::column(width=12,shiny::selectInput(ns('dendrogramCNV'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both')),
+                                                             #htmltools::br(),htmltools::hr(),
+                                                             htmltools::h4('Row dendrogram'),
+                                                             shiny::column(width=6,shiny::selectizeInput(ns("distFun_rowCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                             shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_rowCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
+                                                             htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
+                                                             shiny::column(width=6,shiny::selectizeInput(ns("distFun_colCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                             shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_colCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
+                                                             br(),
+                                                             shiny::column(width=12,
+                                                             shiny::selectizeInput(ns("seriationCNV"), "Seriation", c(OLO="OLO",GW="GW",Mean="mean",None="none"),selected = 'OLO'),
+                                                             shiny::sliderInput(ns('branches_lwdCNV'),'Dendrogram Branch Width',value = 0.6,min=0,max=5,step = 0.1)
+                                                             ) # end of column
+                                                             ),
+                                     shiny::conditionalPanel('input.showMarginCNV==1',ns = ns,
+                                                             htmltools::hr(),
+                                                             htmltools::h4('Widget Layout'),
+                                                             shiny::column(4,shiny::textInput(ns('mainCNV'),'Title','')),
+                                                             shiny::column(4,shiny::textInput(ns('xlabCNV'),'X Title','')),
+                                                             shiny::column(4,shiny::textInput(ns('ylabCNV'),'Y Title','')),
+                                                             shiny::sliderInput(ns('row_text_angleCNV'),'Row Text Angle',value = 0,min=0,max=180),
+                                                             br(),br(),
+                                                             shiny::sliderInput(ns('column_text_angleCNV'),'Column Text Angle',value = 45,min=0,max=180),
+                                                             shiny::sliderInput(ns("lCNV"), "Set Margin Width", min = 0, max = 200, value = 130),
+                                                             shiny::sliderInput(ns("bCNV"), "Set Margin Height", min = 0, max = 200, value = 40)
+                                     )
+                                   )# end of FluidPage
+          ) # end of Box
+          ) # end of fluidRow
+          ) # end of columnbox
         )
       )
     )
-  )#  end of shinyUI(
+  )#  end of shinyUI( of tagList
 
 }
 
@@ -151,10 +184,14 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
   ns <- session$ns
 
 
+  observeEvent(input$showSampleCNV,{
+    print("input showSampleCNV : ")
+    print(input$showSampleCNV)
+  })
 
   reactives <- reactiveValues(obj =  data$table, metadata = metadata$table)
-  print("reactives$metadata in module")
-  print(head(reactives$metadata))
+  #print("reactives$metadata in module")
+  #print(head(reactives$metadata))
   reactives2 <- reactiveValues(selData = data$table)
 #print(reactives$metadata)
 
@@ -197,6 +234,8 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
 
 
   output$colUICNV<-shiny::renderUI({
+    # htmltools::hr()
+    # htmltools::h4('Color Manipulation')
     colSel='Vidiris'
     if(input$transform_funCNV=='cor') colSel='RdBu'
     if(input$transform_funCNV=='is.na10') colSel='grey.colors'
@@ -221,7 +260,21 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
                                       'Heat (Sequential)'='heat.colors',
                                       'Grey (Sequential)'='grey.colors'),
                           selected=colSel)
+    # shiny::sliderInput(ns("ncolCNV"), "Set Number of Colors", min = 1, max = 256, value = 256)
+    # shiny::checkboxInput(ns('colRngAutoCNV'),'Auto Color Range',value = TRUE)
+    # shiny::conditionalPanel(ns('!input.colRngAutoCNV'),shiny::uiOutput(ns('colRngCNV')))
   })
+
+  ####################### Additional parameters #############################
+  # output$colorsUI <- renderUI({
+  # htmltools::hr()
+  # htmltools::h4('Color Manipulation')
+  # shiny::uiOutput(ns('colUICNV'))
+  # shiny::sliderInput(ns("ncolCNV"), "Set Number of Colors", min = 1, max = 256, value = 256)
+  # shiny::checkboxInput(ns('colRngAutoCNV'),'Auto Color Range',value = TRUE)
+  # shiny::conditionalPanel(ns('!input.colRngAutoCNV'),shiny::uiOutput(ns('colRngCNV')))
+  # })
+
 
   shiny::observeEvent({reactives2$selData},{
     output$colRngCNV=shiny::renderUI({
@@ -260,7 +313,7 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
                    if(input$showSampleCNV){
                     data.in <- reactives$obj
                      if(!is.null(input$selRowsCNV)){
-                       print("selrow not nut")
+                       #print("selrow not nut")
                        set.seed(input$setSeedCNV)
                        if((input$selRowsCNV >= 2) & (input$selRowsCNV < nrow(data.in))){
                          print("morethan2selrow and selrows < datain")
@@ -284,10 +337,10 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
   #
   interactiveHeatmapCNV<- shiny::reactive({
     data.in <- reactives2$selData
-    print("data.in")
+    #print("data.in")
     print("Showsample")
 
-    print(head(data.in))
+    #print(head(data.in))
     if(input$showSampleCNV){
       if(!is.null(input$selRowsCNV)){
         print("selrow not nut")

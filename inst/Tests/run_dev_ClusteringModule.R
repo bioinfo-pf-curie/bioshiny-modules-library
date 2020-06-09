@@ -5,7 +5,9 @@ devtools::document('.')
 devtools::load_all('.')
 options(app.prod = FALSE) # TRUE = production mode, FALSE = development mode
 library(shiny)
-import::from(shinydashboard,box,dashboardPage,dashboardSidebar,dashboardBody,dashboardHeader,DT)
+import::from(shinydashboard,box,dashboardPage,dashboardSidebar,dashboardBody,dashboardHeader)
+library(DT)
+library(DESeq2)
 
 
 if (interactive()){
@@ -35,14 +37,15 @@ if (interactive()){
     )
 
 
-Clusterdata <- reactiveValues(table = NULL)
 
     observe({
 
-    Clusterdata$table <- counts$table[1:50,]
+    Clusterdata <- reactiveValues(table =  counts$table[1:50,])
+    vst <- vst(as.matrix(counts$table),blind = TRUE)[1:50,]
 
      heatmap <- callModule(ClusteringServer, id = "heatmapID", session = session,
-                                    data = Clusterdata, metadata =  metadata, printRows = FALSE)
+                                    data = Clusterdata, metadata =  metadata, printRows = FALSE,
+                           vst = vst)
 
     })
 
