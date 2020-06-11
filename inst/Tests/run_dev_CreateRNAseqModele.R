@@ -7,8 +7,6 @@ options(app.prod = FALSE) # TRUE = production mode, FALSE = development mode
 library(shiny)
 import::from(shinydashboard,box, dashboardPage,dashboardSidebar,dashboardBody,dashboardHeader)
 
-
-
 if (interactive()){
 
 ui <- dashboardPage(
@@ -16,10 +14,10 @@ ui <- dashboardPage(
           dashboardSidebar(),
           dashboardBody(
              fluidRow(CreateModelUI("Design")),
-             fluidRow(box(title = "Contrasts matrix :",width =12,
-                 column(DT::dataTableOutput("contrast")))
-                 ),
-                column(DT::dataTableOutput("design"))
+             fluidRow(box(title = "Contrasts matrix :",
+                 DT::dataTableOutput("contrast")
+                 )),
+             fluidRow(box(title = "design matrix",DT::dataTableOutput("design")))
                        )
                    )
 

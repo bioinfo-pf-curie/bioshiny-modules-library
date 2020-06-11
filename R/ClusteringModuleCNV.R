@@ -224,7 +224,7 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
 
     output$sampleCNV<-shiny::renderUI({
       list(
-        shiny::column(4,shiny::textInput(inputId = ns('setSeedCNV'),label = 'Seed',value = sample(1:10000,1))),
+        #shiny::column(4,shiny::textInput(inputId = ns('setSeedCNV'),label = 'Seed',value = sample(1:10000,1))),
         shiny::column(4,shiny::numericInput(inputId = ns('selRowsCNV'),label = 'Number of Rows',min=1,max=pmin(500,subdata$rows),value = pmin(500,subdata$rows))),
         shiny::column(4,shiny::selectizeInput(ns('selColsCNV'),'Columns Subset',choices = subdata$cols,multiple=TRUE))
       )
@@ -314,7 +314,8 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
                     data.in <- reactives$obj
                      if(!is.null(input$selRowsCNV)){
                        #print("selrow not nut")
-                       set.seed(input$setSeedCNV)
+                       #set.seed(input$setSeedCNV)
+                       set.seed(500)
                        if((input$selRowsCNV >= 2) & (input$selRowsCNV < nrow(data.in))){
                          print("morethan2selrow and selrows < datain")
                          # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
@@ -344,7 +345,8 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
     if(input$showSampleCNV){
       if(!is.null(input$selRowsCNV)){
         print("selrow not nut")
-        set.seed(input$setSeedCNV)
+        #set.seed(input$setSeedCNV)
+        set.seed(500)
         if((input$selRowsCNV >= 2) & (input$selRowsCNV < nrow(data.in))){
           print("morethan2selrow and selrows < datain")
           # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
