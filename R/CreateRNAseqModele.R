@@ -21,21 +21,26 @@ CreateModelUI <- function(id) {
 
   ns <- NS(id)
   fluidPage(
-          fluidRow(box(title = "Creates DEG model",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+          #fluidRow(
+          box(title = "Creates DEG model",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
                     status = "primary",width= 12,
-              fluidRow(column(width = 10,uiOutput(ns("var")),
+              #fluidRow(
+                column(width = 10,uiOutput(ns("var")),
               uiOutput(ns("covar"))),
               column(width = 2,
                      br(),
                      br(),
                      br(),
-                     actionButton(ns("help1"),"",icon = icon("info"))))
+                     actionButton(ns("help1"),"",icon = icon("info")))
+              #) # end of fluidRow
               #uiOutput(ns("interact")),
               #uiOutput(ns("formula"))
-          )),
-          fluidRow(box(title = "Comparison",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+              ), # end of box
+          #), # end of fluidRow
+          #fluidRow(
+            box(title = "Comparison",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
               status = "primary",width= 12,
-              fluidRow(
+              #fluidRow(
                 column(width=6,
                               uiOutput(ns("Group1")),
                        textOutput(ns("group1table")),
@@ -50,7 +55,8 @@ CreateModelUI <- function(id) {
               br(),
               actionButton(ns("Build"),"Build Model"))
 
-  ))
+  #)
+  #)
 }
 
 
@@ -183,9 +189,11 @@ output$formula <- renderUI({
  output$var <- renderUI({
 
    tagList(
+   #fluidRow(
    selectInput(ns("var"),"Variable of interest :",choices = colnames(sampleplan$table),
                multiple = FALSE, selected = colnames(sampleplan$table)[1])
-    )
+   #)
+   )
  })
 
 observeEvent(input$help1,{
