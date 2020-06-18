@@ -10,7 +10,8 @@ CreateModelServer(
   session,
   sampleplan = NULL,
   matrix = NULL,
-  batcheffect = NULL
+  batcheffect = NULL,
+  var = NULL
 )
 }
 \arguments{

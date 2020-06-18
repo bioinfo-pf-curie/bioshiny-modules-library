@@ -72,7 +72,7 @@ CreateModelUI <- function(id) {
   #' @import limma
 
 
-CreateModelServer <- function(input, output, session, sampleplan = NULL , matrix = NULL ,batcheffect = NULL) {
+CreateModelServer <- function(input, output, session, sampleplan = NULL , matrix = NULL ,batcheffect = NULL,var = NULL) {
 
 req(sampleplan)
 req(matrix)
@@ -81,9 +81,15 @@ ns <- session$ns
 reactives <- reactiveValues(design = NULL, formula = NULL, contrast = NULL)
 groups <- reactiveValues(Group1 = NULL, Group2 = NULL)
 
+sampleplanformodel <- reactiveValues(table = NULL)
 observeEvent(input$remove1,{
 
+  # var <- input$var
+  # print(head(sampleplan$table))
+  # print(var)
+  # print(class(var))
   sampleplan$table[input$remove1,input$var] <- "removed"
+  #updateSelectInput(ns("var"),"Variable of interest :",selected = as.character(var), choices = colnames(sampleplan$table))
 
 })
 
@@ -111,8 +117,13 @@ observeEvent(c(input$var,
       if(!is.null(input$var)){
             if(!is.null(matrix$table)){
 
-    design.idx <- colnames(sampleplan$table)
-    if (length(c(input$var,input$covar)) > 1){
+    #sampleplan <- sampleplan$table[rownames(sampleplan$table) %in% colnames(matrix$table),]
+    sampleplan <- sampleplan$table
+    print("sampleplanformula")
+    print(nrow(sampleplan))
+    design.idx <- colnames(sampleplan)
+    if(input$covar != ""){
+    #if (length(c(input$var,input$covar)) > 1){
 
     print("with covar")
     vector <- c(input$var,input$covar)
@@ -143,31 +154,61 @@ observeEvent(input$Build,{
     if(!is.null(input$var)){
       if(!is.null(input$Group2sel)){
         if(!is.null(input$Group1sel)){
-      if(!is.null(matrix())){
+      #if(!is.null(matrix())){
+        if(!is.null(matrix$table)){
         if(!is.null(reactives$formula)){
 
 
     #### data, remove removed previously before calling model.matrix.
+
     #data <- sampleplan$table[which(sampleplan$table[,input$var] %in% c(groups$Group1,groups$Group2)),]
+    print(class(sampleplan$table))
     data <- na.omit(sampleplan$table)
-    print("data")
-    print(head(data))
+    #data <- sampleplan$table[rownames(sampleplan$table) %in% colnames(matrix$table),]
+    data <- sampleplan$table
+    mat <- matrix$table[,rownames(data)]
+    #print(rownames(matrix$table))
+
+    # print("data")
+    # #print(head(data))
+    # print(nrow(data))
+    # #print(rownames(data))
+    # print("matrixtable")
+    # print(ncol(mat))
+    # #print(colnames(mat))
+
+    #data <- na.omit(data[colnames(matrix$table),])
+
+
+
+    #print(colnames(mat)[which(colnames(mat) %in% rownames(data))])
+    #mat <- mat[,colnames(mat) %in% rownames(data)]
+    #mat <- mat[,colnames(mat)[which(colnames(mat) %in% rownames(data))]]
+
 
     design <- model.matrix(reactives$formula, data=data)
-    print("design")
-    print(design)
-    rownames(design) <- colnames(matrix$table[,rownames(data)])
+    #print("design")
+    print(head(design))
+    rownames(design) <- colnames(mat[,rownames(data)])
+    #design <- design[which(rownames(design) %in% colnames(mat)),]
     colnames(design) <- make.names(colnames(design))
     print("design2")
-    print(design)
+    print(head(design))
 
+
+    print("group1sel")
+    print(input$Group1sel)
+    print("group2sel")
+    print(input$Group2sel)
     contrast <-makeContrasts(contrasts = paste0(paste0(input$var,input$Group1sel),"-",(paste0(input$var,input$Group2sel))) ,
                               levels=design)
 
+    print("contrast")
+    #print(head(contrast))
     reactives$contrast <- contrast
     reactives$design <- design
-    # print(reactives$contrast)
-    # print(reactives$design)
+     #print(reactives$contrast)
+     #print(reactives$design)
       }
     }
   }}}
@@ -185,16 +226,19 @@ output$formula <- renderUI({
    }
 })
 
-
+#isolate({
  output$var <- renderUI({
 
    tagList(
    #fluidRow(
-   selectInput(ns("var"),"Variable of interest :",choices = colnames(sampleplan$table),
-               multiple = FALSE, selected = colnames(sampleplan$table)[1])
+   selectInput(ns("var"),"Variable of interest :",choices = var,
+               multiple = FALSE, selected = var[1])
    #)
    )
  })
+#})
+
+
 
 observeEvent(input$help1,{
 
@@ -217,8 +261,10 @@ observeEvent(input$help1,{
 
  output$covar <- renderUI({
   tagList(
-   selectInput(ns("covar"),"Covariables :",choices = c("None" ="" ,colnames(sampleplan$table)),
-               multiple = TRUE, selectize = TRUE)
+   # selectInput(ns("covar"),"Covariables :",choices = c("None" ="" ,colnames(sampleplan$table)),
+   #             multiple = TRUE, selectize = TRUE)
+   selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
+               multiple = FALSE, selectize = TRUE, selected = "")
    )
 
  })

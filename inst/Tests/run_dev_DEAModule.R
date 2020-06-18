@@ -41,7 +41,8 @@ if (interactive()){
 
     Model <- callModule(CreateModelServer, "Design",
                         sampleplan = metadata,
-                        matrix = counts)
+                        matrix = counts,
+                        var = colnames(metadata$table))
 
 
     output$contrast <- DT::renderDataTable(
@@ -54,13 +55,21 @@ if (interactive()){
       as.data.frame(Model$design)
     )
 
-
-observe({
+#DEA <- reactiveValues(res= NULL, upp = NULL, down = NULL)
+#observe({
 
     DEA <- callModule(DEAServer, "DEA", session = session,
                       countmatrix = counts,
                       Model = Model)
 
+#})
+    #observeEvent(DEA$res,{
+#DEA <- "a"
+observe({
+    #if(DEA != "a"){
+    print("DEA$res")
+    print(DEA$res)
+#}
 })
 
     #output$dds <- renderText(renderPrint(print(dds$mydds)))

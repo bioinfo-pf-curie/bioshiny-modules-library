@@ -412,6 +412,22 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
                                 limits = ColLimits) %>%
         plotly::layout(margin = list(l = input$l, b = input$b))
 
+
+      p$dendRow <- cutree(
+        hclust(dist(data.in,method = input$distFun_row),method = input$hclustFun_row),
+        k = input$r
+      )
+      # print("rowclust")
+      # print(p$dendRow)
+      p$dendCol <- cutree(
+        hclust(dist(t(data.in),method = input$distFun_col),method = input$hclustFun_col),
+        k = input$c
+      )
+      # print("colclust")
+      print("classcolclust")
+      print(class(p$dendCol))
+      #print(table(p$dendCol))
+
       p$elementId <- NULL
 
       p
@@ -500,6 +516,10 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
 } # end of if !is.null(data)
 
-return(p)
+#print(return)
+#print(names(p))
+#print(names(interactiveHeatmap()))
+#return(p)
+return(interactiveHeatmap())
 
 }

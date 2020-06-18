@@ -14,9 +14,10 @@ if (interactive()){
     dashboardHeader(title = "Creates model Test"),
     dashboardSidebar(),
     dashboardBody(
-
+      fluidPage(
+        fluidRow(
       DrawPCAUI2("PCA1")
-
+    ))
     )
   )
 

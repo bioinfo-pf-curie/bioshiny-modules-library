@@ -20,11 +20,20 @@
 DrawPCAUI2 <- function(id) {
   ns <- NS(id)
   fluidPage(
+  #fillPage(
+   tags$head(
+      tags$style(type='text/css', ".span12 { width: 510px; }"),
+      tags$style(type='text/css', ".span17 { width: 510px; height = 2000px }")
+    ),
+    tagList(
+    #div(class = "span17",
     tabsetPanel(
-
       tabPanel("Parameters",
-               fluidPage(fluidRow(#actionButton(ns("checkdata"),"Check Data"),
-                                  column(4,
+               fluidPage(
+                # fillPage(
+                   fluidRow(#actionButton(ns("checkdata"),"Check Data"),
+                   #fillRow(
+                                    column(4,
                                          p("Select options for the PCA (we are using the ", a("prcomp", href = "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/prcomp.html"), "function):"),
                                          wellPanel(
                                            # NOTE: this is placed on this tab, otherwise each time the slider is moved
@@ -47,18 +56,21 @@ DrawPCAUI2 <- function(id) {
                                            ) # end wellPanel
                ),column(6,
                         wellPanel(
-                          uiOutput(ns("choose_samples_pca"))
+                          fluidRow(uiOutput(ns("choose_samples_pca")))
                         )
                )),
-               tagList(
-               actionButton(ns("pcago"),"RunPCA"))
-               )#end of Taglist
+               fluidRow(actionButton(ns("pcago"),"RunPCA")))
+               #fillRow(actionButton(ns("pcago"),"RunPCA")))
+
+               #)#end of Taglist
       ), # end  tab
 
       tabPanel("Plots",
                h3("Scree plot"),
                p("The scree plot shows the variances of each PC, and the cumulative variance explained by each successive PC (in %) "),
-               fluidRow(column(8,
+               fluidRow(
+               #fillRow(
+                column(8,
                                plotOutput(ns("SCREE_PLOT"), height = "300px")
 
                ),
@@ -67,11 +79,14 @@ DrawPCAUI2 <- function(id) {
                )
                ),
                fluidRow(
+               #fillRow(
                  h3("PC plot: zoom and select points"),
                  p("Click and drag on the first plot below to zoom into a region on the plot. Or you can go directly to the second plot below to select points to get more information about them."),
                  p("Then select points on zoomed plot below to get more information about the points."),
                  p("You can click on the 'Compute PCA' tab at any time to change the variables included in the PCA, and then come back to this tab and the plots will automatically update.")),
-               fluidRow(column(8,
+               fluidRow(
+               #fillRow(
+                 column(8,
                                plotOutput (ns("PCA_PLOT"), width = '100%',
                                            brush = brushOpts(
                                              id = "PCA_PLOTBrush",
@@ -118,9 +133,12 @@ DrawPCAUI2 <- function(id) {
       ), # end  tab
       id="mainTabPanel",
       selected="Parameters"
-    ))# end tabsetPanel
+    #)# end of div
+    ) # end tabsetPanel
+    ) # end fluidPage
+    #) # enfd of fill
 
-
+) # end tagList
 }
 
 
@@ -192,8 +210,8 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
 
       if ((!is.null(reactives$metadata)) & (!is.null(reactives$matrix)))  {
         # check that all samples from the count data are present in the metadata and vice versa
-        print(rownames(reactives$metadata))
-        print(rownames(reactives$matrix))
+        #print(rownames(reactives$metadata))
+        #print(rownames(reactives$matrix))
         # now combine them according to the row / column names
         combined <- merge(reactives$matrix, reactives$metadata, by = "row.names")
         # assign the row names and remove the row.names column
@@ -224,10 +242,10 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
   output$selectNumGenes <- renderUI({
 
     # max_genes = length(matrix$table[1,])
-    print(length(reactives$combined[1,]))
+    #print(length(reactives$combined[1,]))
     #tagList(
     sliderInput(ns('num_top_genes'), 'Number of genes to use for calculating PCA (sorted by variance)',
-                min=100,
+                min=10,
                 max=length(reactives$combined[1,]),
                 step=100,
                 value=min(length(reactives$combined[1,])))
@@ -332,7 +350,7 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
                          max(x, na.rm = TRUE) == min(x, na.rm = TRUE))]
                      incProgress(0.1)
 
-                     print(colnames(the_data_subset)[1:3])
+                     #print(colnames(the_data_subset)[1:3])
 
                      # subselect the genes (either given as a list or as the topX most variable)
                      rv <- rowVars(t(the_data_subset))
@@ -612,7 +630,7 @@ observeEvent( c(input$plotpca,
     #   #
     output$pca_details <- renderPrint({
       #
-      print(pca_objects$pca_output$x)
+      #print(pca_objects$pca_output$x)
       summary(pca_objects$pca_output)
     })
     #

@@ -27,7 +27,7 @@ fluidPage(
 tagList(
   fluidRow(
     column(width = 6,selectInput(ns("DEAmeth"),"Select a package for DEA analysis",choices = c("DEseq2","limma"), selected = "limma")),
-    column(width = 6,selectInput(ns("transformed"),"Perform DEA on ",choices = c("Raw data","Rlog Data","VST Data")))
+    #column(width = 6,selectInput(ns("transformed"),"Perform DEA on ",choices = c("Raw data","Rlog Data","VST Data")))
     ),
   fluidRow(
     column(width = 6,selectInput(ns("AdjMeth"),"Select an adjustment method", choices = c("BH","none","BY","holm"), selected = "BH")),
@@ -86,35 +86,43 @@ tagList(
 DEAServer <- function(input, output, session, countmatrix = NULL, Model = NULL) {
 
 
-  ns <- session$ns
+ns <- session$ns
+### Define reactives #############
+results <- reactiveValues(res = NULL, up = NULL, down = NULL,nsignfc = NULL)
 
-  ### Defin reactives #############
-  results <- reactiveValues(res = NULL, up = NULL, down = NULL,nsignfc = NULL)
+# observe({
+# req(countmatrix$table)
+# req(Model$contrast)
 
 observeEvent(c(countmatrix$table,
                Model$contrast),priority = 10,{
 #observe({
 
+  #if (!is.null(countmatrix$table) && !is.null(Model$design)){
   if (!is.null(countmatrix$table) && !is.null(Model$design)){
 
+    #print(head(countmatrix$table))
+  counts <- countmatrix$table
   if(input$DEAmeth == "limma"){
 
-
-    y <- DGEList(counts=countmatrix$table, genes=rownames(countmatrix$table))
+    for (col in 1:ncol(counts)){
+    counts[,col] <- as.numeric(counts[,col])
+    }
+    y <- DGEList(counts=counts, genes=rownames(counts))
     #Voom transforms count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observation-level weights
     v <- voom(y, Model$design, plot=FALSE)
     fit <- lmFit(v, Model$design)
-    print('design infos')
-    print(head(Model$design))
-    print(class(Model$design))
-    print(head(Model$contrast))
-    print(class(Model$contrast))
-    print('end of design infos')
+    # print('design infos')
+    # print(head(Model$design))
+    # print(class(Model$design))
+    # print(head(Model$contrast))
+    # print(class(Model$contrast))
+    # print('end of design infos')
 
     fit2 <- contrasts.fit(fit,Model$contrast)
     #Given a microarray linear model fit, compute moderated t-statistics, moderated F-statistic, and log-odds of differential expression by empirical Bayes moderation of the standard errors towards a common value.
     fit2 <- eBayes(fit2)
-    res <- topTable(fit2, number=nrow(countmatrix$table), adjust.method=input$AdjMeth)
+    res <- topTable(fit2, number=nrow(counts), adjust.method=input$AdjMeth)
     res <- res[order(res$adj.P.Val),]
     rownames(res) <- res$genes
     res$genes  <- NULL
@@ -217,7 +225,10 @@ output$featuress <-
     )
 })
 
-
+#observeEvent(c(results$res,results$nsignfc),{
+#observe({
+#})
 return(results)
+#})
 
 }

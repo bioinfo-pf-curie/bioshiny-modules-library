@@ -34,19 +34,24 @@ server <- function(input, output, session) {
     counts <- reactiveValues(table = read.table(counts_path, header = TRUE, sep = ",",
                                                 row.names = 1)
                              )
-
-
+#Model <- reactiveValues(contrast = NULL, design = NULL)
+#observe({
     Model <- callModule(CreateModelServer, "Design",
                         sampleplan = metadata,
-                        matrix = counts)
+                        matrix = counts,
+                        var = colnames(metadata$table))
+#})
 
+ # observe({
+#   req(Model$contrast)
     output$contrast <- DT::renderDataTable(
 
       as.data.frame(Model$contrast)
     )
+ # })
 
     output$design <- DT::renderDataTable(
-
+      #req(Model$design),
       as.data.frame(Model$design)
     )
 
