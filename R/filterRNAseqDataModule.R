@@ -24,10 +24,14 @@ FilterRNAUI <- function(id){
 
   ns <- NS(id)
   tagList(
-    numericInput(inputId = ns("TPM_sum"),
-                  label = "Select features with TPM sum >= to : ", min = 0, max = 20, value = 0),
-    numericInput(inputId = ns("TPM_mean"),
-                 label = "Select features with TPM mean >= to : ", min = 0, max = 20, value = 0),
+    # numericInput(inputId = ns("TPM_sum"),
+    #               label = "Select features with TPM sum >= to : ", min = 0, max = 20, value = 10),
+    # numericInput(inputId = ns("TPM_mean"),
+     #            label = "Select features with TPM mean >= to : ", min = 0, max = 20, value = 2),
+    numericInput(inputId = ns("TPM_filter"),
+                 label = "Select features with TPM value >= to : ", min = 0, max = 20, value = 2),
+    numericInput(inputId = ns("nsamples"),
+                 label = "in at least 'value' % of samples : ", min = 0, max = 20, value = 10),
     fluidRow(
       column(
       width = 9,
@@ -60,25 +64,34 @@ FilterRNAUI <- function(id){
 FilterRNAServer <- function(input, output, session, data = NULL) {
 
   ns <- session$ns
+  rawdata <- reactiveValues(table = NULL)
   returns <- reactiveValues(DataFiltered = NULL)
 
-
-
   observeEvent(c(data$table,
-                 input$TPM_mean,
-                 input$TPM_sum),{
+                 #input$TPM_mean,
+                 #input$TPM_sum
+                 input$TPM_filter,
+                 input$nsamples),{
 
   if (!is.null(data$table)){
-  rawdata <- reactiveValues(table = data$table)
-  rawdata$table[,"TPM_sum"] <- rowSums(rawdata$table)
-  rawdata$table[,"TPM_mean"] <- rowMeans(rawdata$table[,-ncol(rawdata$table)])
-  returns$DataFiltered <- rawdata$table[which(rawdata$table[,'TPM_sum'] >= input$TPM_sum),]
-  returns$DataFiltered <- returns$DataFiltered[which(returns$DataFiltered[,'TPM_mean'] >= input$TPM_mean),]
-  returns$DataFiltered <- returns$DataFiltered[,-c(ncol(returns$DataFiltered),
-                                                 ncol(returns$DataFiltered) - 1)
-                                             ]
 
-  #return(returns)
+  data <- data$table
+  isexpr <- names(which(apply(data, 1, function(x){length(which(x>=input$TPM_filter))})>=(length(colnames(data))*input$nsamples/100)))
+  print(head(isexpr))
+  #rawdata$table <- rawdata$table[which(input$TPM_filter),]
+  print("headtable")
+  print(data)
+  #rawdata$table <- data[isexpr,]
+
+  #rawdata$table[,"TPM_sum"] <- rowSums(rawdata$table)
+  #rawdata$table[,"TPM_mean"] <- rowMeans(rawdata$table[,-ncol(rawdata$table)])
+  # returns$DataFiltered <- rawdata$table[which(rawdata$table[,'TPM_sum'] >= input$TPM_sum),]
+  # returns$DataFiltered <- returns$DataFiltered[which(returns$DataFiltered[,'TPM_mean'] >= input$TPM_mean),]
+  # returns$DataFiltered <- returns$DataFiltered[,-c(ncol(returns$DataFiltered),
+  #                                                ncol(returns$DataFiltered) - 1)
+  #                                            ]
+
+  returns$DataFiltered <-  data[isexpr,]
   } # end of if
 
 

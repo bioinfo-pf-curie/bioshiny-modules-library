@@ -32,9 +32,6 @@ CreateModelUI <- function(id) {
                      br(),
                      br(),
                      actionButton(ns("help1"),"",icon = icon("info")))
-              #) # end of fluidRow
-              #uiOutput(ns("interact")),
-              #uiOutput(ns("formula"))
               ), # end of box
           #), # end of fluidRow
           #fluidRow(
@@ -80,45 +77,37 @@ req(matrix)
 ns <- session$ns
 reactives <- reactiveValues(design = NULL, formula = NULL, contrast = NULL)
 groups <- reactiveValues(Group1 = NULL, Group2 = NULL)
+sampleplanmodel <- reactiveValues(table = sampleplan$table)
 
-sampleplanformodel <- reactiveValues(table = NULL)
 observeEvent(input$remove1,{
-
-  # var <- input$var
-  # print(head(sampleplan$table))
-  # print(var)
-  # print(class(var))
-  sampleplan$table[input$remove1,input$var] <- "removed"
+  sampleplanmodel$table[input$remove1,input$var] <- "removed"
   #updateSelectInput(ns("var"),"Variable of interest :",selected = as.character(var), choices = colnames(sampleplan$table))
-
 })
-
 observeEvent(input$move1,{
-  sampleplan$table[input$move1,input$var] <- input$Group2sel
+  #sampleplan$table[input$move1,input$var] <- input$Group2sel
+  sampleplanmodel$table[input$move1,input$var] <- input$Group2sel
 })
-
 observeEvent(input$remove2,{
-
-  sampleplan$table[input$remove2,input$var] <- "removed"
-
+  #sampleplan$table[input$remove2,input$var] <- "removed"
+  sampleplanmodel$table[input$remove2,input$var] <- "removed"
 })
-
 observeEvent(input$move2,{
-  sampleplan$table[input$move2,input$var] <- input$Group1sel
+  #sampleplan$table[input$move2,input$var] <- input$Group1sel
+  sampleplanmodel$table[input$move2,input$var] <- input$Group1sel
 })
-
 
 observeEvent(c(input$var,
               input$covar
-              #input$interact
               ),{
 
-    if(!is.null(sampleplan$table)){
+    #if(!is.null(sampleplan$table)){
+      if(!is.null(sampleplanmodel$table)){
       if(!is.null(input$var)){
             if(!is.null(matrix$table)){
 
     #sampleplan <- sampleplan$table[rownames(sampleplan$table) %in% colnames(matrix$table),]
-    sampleplan <- sampleplan$table
+    #sampleplan <- sampleplan$table
+    sampleplan <- sampleplanmodel$table
     print("sampleplanformula")
     print(nrow(sampleplan))
     design.idx <- colnames(sampleplan)
@@ -149,23 +138,22 @@ observeEvent(c(input$var,
 
 observeEvent(input$Build,{
 
-
-  if(!is.null(sampleplan$table)){
+  #if(!is.null(sampleplan$table)){
+    if(!is.null(sampleplanmodel$table)){
     if(!is.null(input$var)){
       if(!is.null(input$Group2sel)){
         if(!is.null(input$Group1sel)){
       #if(!is.null(matrix())){
         if(!is.null(matrix$table)){
         if(!is.null(reactives$formula)){
-
-
     #### data, remove removed previously before calling model.matrix.
-
     #data <- sampleplan$table[which(sampleplan$table[,input$var] %in% c(groups$Group1,groups$Group2)),]
-    print(class(sampleplan$table))
-    data <- na.omit(sampleplan$table)
+    print(class(sampleplanmodel$table))
+    #data <- na.omit(sampleplan$table)
+    data <- na.omit(sampleplanmodel$table)
     #data <- sampleplan$table[rownames(sampleplan$table) %in% colnames(matrix$table),]
-    data <- sampleplan$table
+    #data <- sampleplan$table
+    data <- sampleplanmodel$table
     mat <- matrix$table[,rownames(data)]
     #print(rownames(matrix$table))
 
@@ -179,13 +167,6 @@ observeEvent(input$Build,{
 
     #data <- na.omit(data[colnames(matrix$table),])
 
-
-
-    #print(colnames(mat)[which(colnames(mat) %in% rownames(data))])
-    #mat <- mat[,colnames(mat) %in% rownames(data)]
-    #mat <- mat[,colnames(mat)[which(colnames(mat) %in% rownames(data))]]
-
-
     design <- model.matrix(reactives$formula, data=data)
     #print("design")
     print(head(design))
@@ -194,8 +175,6 @@ observeEvent(input$Build,{
     colnames(design) <- make.names(colnames(design))
     print("design2")
     print(head(design))
-
-
     print("group1sel")
     print(input$Group1sel)
     print("group2sel")
@@ -203,12 +182,8 @@ observeEvent(input$Build,{
     contrast <-makeContrasts(contrasts = paste0(paste0(input$var,input$Group1sel),"-",(paste0(input$var,input$Group2sel))) ,
                               levels=design)
 
-    print("contrast")
-    #print(head(contrast))
     reactives$contrast <- contrast
     reactives$design <- design
-     #print(reactives$contrast)
-     #print(reactives$design)
       }
     }
   }}}
@@ -226,18 +201,13 @@ output$formula <- renderUI({
    }
 })
 
-#isolate({
  output$var <- renderUI({
 
    tagList(
-   #fluidRow(
    selectInput(ns("var"),"Variable of interest :",choices = var,
                multiple = FALSE, selected = var[1])
-   #)
    )
  })
-#})
-
 
 
 observeEvent(input$help1,{
@@ -273,7 +243,10 @@ observeEvent(input$help1,{
 output$Group1 <- renderUI({
   tagList(
                 selectInput(ns("Group1sel"),"Group 1", choices = na.omit(levels(sampleplan$table[,input$var])),
-                 selected= na.omit(levels(sampleplan$table[,input$var])[1]))
+                 #selected= na.omit(levels(sampleplan$table[,input$var])[1]))
+                selected= na.omit(levels(sampleplanmodel$table[,input$var])[1]))
+                # selectInput(ns("Group1sel"),"Group 1", choices = na.omit(levels(isolate(sampleplan$table[,input$var]))),
+                #             selected= na.omit(levels(isolate(sampleplan$table[,input$var]))[1]))
 
           )
  })
@@ -281,8 +254,13 @@ output$Group1 <- renderUI({
 #observeEvent(input$Group1sel,ignoreInit = TRUE,{
 #observeEvent(input$Group1sel,{
 observe({
-  groups$Group1 <- rownames(sampleplan$table[which(sampleplan$table[,input$var] == input$Group1sel),])
+#observeEvent(sampleplan$table,{
+#eventReactive(sampleplan$table,{
+  #groups$Group1 <- rownames(sampleplan$table[which(sampleplan$table[,input$var] == input$Group1sel),])
+  groups$Group1 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group1sel),])
 })
+
+
 
 observe({
   if(!is.null(groups$Group1)){
@@ -313,15 +291,20 @@ output$Group2 <- renderUI({
                     # selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(unique(sampleplan$table[,input$var])),
                     #             selected = na.omit(unique(sampleplan$table[,input$var])[2]) )
             selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(sampleplan$table[,input$var])),
-                        selected = na.omit(levels(sampleplan$table[,input$var])[2]) )
+                        #selected = na.omit(levels(sampleplan$table[,input$var])[2]) )
+                        selected = na.omit(levels(sampleplanmodel$table[,input$var])[2]) )
+            # selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(isolate(sampleplan$table[,input$var]))),
+            #              selected = na.omit(levels(isolate(sampleplan$table[,input$var]))[2]) )
           )
 
  })
 
-#observeEvent(input$Group2sel,ignoreInit = TRUE,{
-#observeEvent(input$Group2sel,{
+
 observe({
-  groups$Group2 <- rownames(sampleplan$table[which(sampleplan$table[,input$var] == input$Group2sel),])
+#observeEvent(sampleplan$table,{
+#eventReactive(sampleplan$table,{
+  #groups$Group2 <- rownames(sampleplan$table[which(sampleplan$table[,input$var] == input$Group2sel),])
+  groups$Group2 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group2sel),])
 })
 
 output$group2table <- renderText({
@@ -367,8 +350,13 @@ validationModalModel <- function(msg = "", title = "Model Error") {
 
 }
 
-
+observeEvent(
+  c(reactives$contrast,reactives$design),{
+print("return reactives")
 return(reactives)
+})
 
+print("return2")
+return(reactives)
 
 }

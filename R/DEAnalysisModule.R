@@ -31,7 +31,7 @@ tagList(
     ),
   fluidRow(
     column(width = 6,selectInput(ns("AdjMeth"),"Select an adjustment method", choices = c("BH","none","BY","holm"), selected = "BH")),
-    column(width = 6,numericInput(ns("PvalsT"),"P values threshold", min = 0, max = 1 , value = 0.05, step = 0.01))),
+    column(width = 6,numericInput(ns("PvalsT"),"adjusted P values' threshold", min = 0, max = 1 , value = 0.05, step = 0.01))),
     fluidRow(
       column(width = 6,numericInput(ns("FCT"),"LogFC threshold", min = 0, max = 10 , value = 1, step = 0.05)),
       column(width = 6, infoBoxOutput(ns("featuress"),tags$style("#featuress {width:230px;}")))),

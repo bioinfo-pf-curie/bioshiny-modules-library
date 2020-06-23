@@ -14,11 +14,12 @@ if (interactive()){
     dashboardHeader(title = "Creates model Test"),
     dashboardSidebar(),
     dashboardBody(
-      fluidRow(CreateModelUI("Design"),
+      fluidRow(
+      #CreateModelUI("Design"),
       fluidRow(box(title = "Contrasts matrix :",width =12,
                    DT::dataTableOutput("contrast"),
                     DT::dataTableOutput("design"))),
-      DEAUI(id = "DEA"))#,
+      MergedDeaModUI(id = "DEA"))#,
      #textOutput("dds")
       # fluidRow(box(title = "Contrasts matrix :",width =12,
       #              DT::dataTableOutput("contrast")))
@@ -39,49 +40,43 @@ if (interactive()){
                                                 row.names = 1)
     )
 
-    Model <- reactiveValues(contrast = NULL, design = NULL)
-    observe({
-    Model <- callModule(CreateModelServer, "Design",
-                        sampleplan = metadata,
-                        matrix = counts,
+#
+ DEA <- reactiveValues(res= NULL, upp = NULL, down = NULL)
+# ModelDEA <- reactiveValues(design = NULL, contrast = NULL)
+observe({
+      DEA <- callModule(MergedDeaModServer, "DEA", session = session,
+                           matrix = counts,
+                           sampleplan = metadata,
                         var = colnames(metadata$table))
-
-    # DEA <- callModule(DEAServer, "DEA", session = session,
-    #                   countmatrix = counts,
-    #                   Model = Model)
-
-
-   })
-
-
-    output$contrast <- DT::renderDataTable(
-
-      as.data.frame(Model$contrast)
-    )
-
-    output$design <- DT::renderDataTable(
-
-      as.data.frame(Model$design)
-    )
-
-DEA <- reactiveValues(res= NULL, upp = NULL, down = NULL)
-ModelDEA <- reactiveValues(design = NULL, contrast = NULL)
-
-observe({
-  ModelDEA$design <- Model$design
-  ModelDEA$contrast <- Model$contrast
-  DEA <- callModule(DEAServer, "DEA", session = session,
-                       countmatrix = counts,
-                       Model = ModelDEA)
 })
-    #observeEvent(DEA$res,{
-#DEA <- "a"
-observe({
-    #if(DEA != "a"){
-    print("DEA$res")
-    print(DEA$res)
-#}
-})
+#
+#     output$contrast <- DT::renderDataTable(
+#
+#       as.data.frame(Model$contrast)
+#     )
+#
+#     output$design <- DT::renderDataTable(
+#
+#       as.data.frame(Model$design)
+#     )
+#
+
+
+# observe({
+#   ModelDEA$design <- Model$design
+#   ModelDEA$contrast <- Model$contrast
+#   DEA <- callModule(DEAServer, "DEA", session = session,
+#                        countmatrix = counts,
+#                        Model = ModelDEA)
+# })
+#     #observeEvent(DEA$res,{
+# #DEA <- "a"
+# observe({
+#     #if(DEA != "a"){
+#     print("DEA$res")
+#     print(DEA$res)
+# #}
+# })
 
     #output$dds <- renderText(renderPrint(print(dds$mydds)))
 
