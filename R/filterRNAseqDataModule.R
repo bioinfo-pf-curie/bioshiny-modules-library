@@ -77,23 +77,14 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
 
   data <- data$table
   isexpr <- names(which(apply(data, 1, function(x){length(which(x>=input$TPM_filter))})>=(length(colnames(data))*input$nsamples/100)))
-  print(head(isexpr))
-  #rawdata$table <- rawdata$table[which(input$TPM_filter),]
-  print("headtable")
-  print(data)
-  #rawdata$table <- data[isexpr,]
-
   #rawdata$table[,"TPM_sum"] <- rowSums(rawdata$table)
   #rawdata$table[,"TPM_mean"] <- rowMeans(rawdata$table[,-ncol(rawdata$table)])
   # returns$DataFiltered <- rawdata$table[which(rawdata$table[,'TPM_sum'] >= input$TPM_sum),]
   # returns$DataFiltered <- returns$DataFiltered[which(returns$DataFiltered[,'TPM_mean'] >= input$TPM_mean),]
   # returns$DataFiltered <- returns$DataFiltered[,-c(ncol(returns$DataFiltered),
   #                                                ncol(returns$DataFiltered) - 1)
-  #                                            ]
-
   returns$DataFiltered <-  data[isexpr,]
   } # end of if
-
 
   })
 

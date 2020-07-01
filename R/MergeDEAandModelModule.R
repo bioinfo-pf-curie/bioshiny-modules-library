@@ -118,14 +118,6 @@ tabPanel("DEA results",
                    DT::dataTableOutput(ns('down_table')),
                    downloadButton(ns("downdl"),"Down-regulated",class = "butt"))
             )#,
-          #   fluidRow(
-          #   tags$br(),
-          #   h4("Download tables :",style="padding-left:20px"),
-          #   column(width = 4,downloadButton(ns("resdl"),"All genes")),
-          #   column(width = 4,downloadButton(ns("uppdl"),"Up-regulated")),
-          #   column(width = 4,downloadButton(ns("downdl"),"Down-regulated"))
-          # ) # end of Row
-
       ) # end of box
     ) # end of Taglist
 ) # end of second tab
@@ -185,8 +177,6 @@ observeEvent(input$remove1,{
     observeEvent(c(input$var,
                    input$covar
     ),{
-
-      #if(!is.null(sampleplan$table)){
       if(!is.null(sampleplanmodel$table)){
         if(!is.null(input$var)){
           if(!is.null(matrix$table)){
@@ -208,7 +198,7 @@ observeEvent(input$remove1,{
               )
 
             } else if(!is.null(input$var)){
-
+              print("without covar")
               formula <- as.formula(
                 paste0('~0+',as.character(input$var))
               )
@@ -222,25 +212,22 @@ observeEvent(input$remove1,{
 
     observeEvent(input$Build,{
 
-      #if(!is.null(sampleplan$table)){
       if(!is.null(sampleplanmodel$table)){
         if(!is.null(input$var)){
           if(!is.null(input$Group2sel)){
             if(!is.null(input$Group1sel)){
-              #if(!is.null(matrix())){
               if(!is.null(matrix$table)){
                 if(!is.null(reactives$formula)){
                   #### data, remove removed previously before calling model.matrix.
-                  print(class(sampleplanmodel$table))
-                  data <- na.omit(sampleplanmodel$table)
-
+                  #data <- na.omit(sampleplanmodel$table)
                   data <- sampleplanmodel$table
+                  print("samplepla,")
+                  print(head(data))
+                  print("matrix")
+                  print(head(matrix$table))
+
                   mat <- matrix$table[,rownames(data)]
-
-                  #data <- na.omit(data[colnames(matrix$table),])
-
                   design <- model.matrix(reactives$formula, data=data)
-                  #print("design")
                   print(head(design))
                   rownames(design) <- colnames(mat[,rownames(data)])
                   #design <- design[which(rownames(design) %in% colnames(mat)),]
@@ -307,7 +294,6 @@ observeEvent(input$remove1,{
       )
 
     })
-
 
     output$Group1 <- renderUI({
       tagList(
