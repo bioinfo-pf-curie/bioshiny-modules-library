@@ -86,10 +86,6 @@ tabPanel("DEA results",
           br(),
           br(),
           fluidRow(column(width = 12,plotOutput(ns("Volcano"))))
-          #girafeOutput(ns("Volcano"))
-          #girafeOutput(ns("Pvals_distrib")),
-          # plotOutput(ns("scatter")),
-          # plotOutput(ns("Volcano"))
 
       #)
       #)
@@ -186,11 +182,8 @@ observeEvent(input$remove1,{
             print(nrow(sampleplan))
             design.idx <- colnames(sampleplan)
             if(input$covar != ""){
-              #if (length(c(input$var,input$covar)) > 1){
-
               print("with covar")
               vector <- c(input$var,input$covar)
-
               formula <- as.formula(
                 paste0('~0+',input$var,"+",paste0(input$covar,collapse = "+"),"+",
                        paste0(combn(vector,2,FUN = paste,collapse =":"),collapse = "+")
@@ -218,19 +211,10 @@ observeEvent(input$remove1,{
             if(!is.null(input$Group1sel)){
               if(!is.null(matrix$table)){
                 if(!is.null(reactives$formula)){
-                  #### data, remove removed previously before calling model.matrix.
-                  #data <- na.omit(sampleplanmodel$table)
                   data <- sampleplanmodel$table
-                  print("samplepla,")
-                  print(head(data))
-                  print("matrix")
-                  print(head(matrix$table))
-
                   mat <- matrix$table[,rownames(data)]
                   design <- model.matrix(reactives$formula, data=data)
-                  print(head(design))
-                  rownames(design) <- colnames(mat[,rownames(data)])
-                  #design <- design[which(rownames(design) %in% colnames(mat)),]
+                  design <- design[which(rownames(design) %in% colnames(mat)), ]
                   colnames(design) <- make.names(colnames(design))
                   print("design2")
                   print(head(design))
@@ -262,7 +246,6 @@ observeEvent(input$remove1,{
 
       tagList(
         selectInput(ns("var"),"Variable of interest :",choices = var,
-        #selectInput("var","Variable of interest :",choices = var,
                     multiple = FALSE, selected = var[1])
       )
     })
@@ -336,22 +319,14 @@ observeEvent(input$remove1,{
 
     output$Group2 <- renderUI({
       tagList(
-        # selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(unique(sampleplan$table[,input$var])),
-        #             selected = na.omit(unique(sampleplan$table[,input$var])[2]) )
         selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(sampleplan$table[,input$var])),
-                    #selected = na.omit(levels(sampleplan$table[,input$var])[2]) )
                     selected = na.omit(levels(sampleplanmodel$table[,input$var])[2]) )
-        # selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(isolate(sampleplan$table[,input$var]))),
-        #              selected = na.omit(levels(isolate(sampleplan$table[,input$var]))[2]) )
       )
 
     })
 
 
     observe({
-      #observeEvent(sampleplan$table,{
-      #eventReactive(sampleplan$table,{
-      #groups$Group2 <- rownames(sampleplan$table[which(sampleplan$table[,input$var] == input$Group2sel),])
       groups$Group2 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group2sel),])
     })
 
@@ -406,16 +381,17 @@ observeEvent(input$remove1,{
                    if (!is.null(matrix$table) && !is.null(reactives$design)){
 
                      #print(head(matrix$table))
-                     counts <- matrix$table
+                     counts <- matrix$table[,colnames(matrix$table)%in%rownames(reactives$design)]
                      if(input$DEAmeth == "limma"){
 
                        for (col in 1:ncol(counts)){
                          counts[,col] <- as.numeric(counts[,col])
                        }
                        y <- DGEList(counts=counts, genes=rownames(counts))
+
                        #Voom transforms count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observation-level weights
                        results$v <- voom(y, reactives$design, plot=TRUE, save.plot = TRUE)
-                       fit <- lmFit(results$v, reactives$design)
+                       fit <- lmFit(results$v$E, reactives$design)
                        fit2 <- contrasts.fit(fit,reactives$contrast)
                        #Given a microarray linear model fit, compute moderated t-statistics, moderated F-statistic, and log-odds of differential expression by empirical Bayes moderation of the standard errors towards a common value.
                        fit2 <- eBayes(fit2)
