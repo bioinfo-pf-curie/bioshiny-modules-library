@@ -467,7 +467,7 @@ observeEvent(input$remove1,{
                        y <- DGEList(counts=counts, genes=rownames(counts))
 
                        #Voom transforms count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observation-level weights
-                       results$v <- voom(y, reactives$design, plot=TRUE, save.plot = TRUE)
+                       results$v <- voom(y, reactives$design, plot=TRUE, save.plot = FALSE)
                        fit <- lmFit(results$v$E, reactives$design)
                        fit2 <- contrasts.fit(fit,reactives$contrast)
                        #Given a microarray linear model fit, compute moderated t-statistics, moderated F-statistic, and log-odds of differential expression by empirical Bayes moderation of the standard errors towards a common value.
