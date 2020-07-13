@@ -28,19 +28,23 @@ FilterRNAUI <- function(id){
     #               label = "Select features with TPM sum >= to : ", min = 0, max = 20, value = 10),
     # numericInput(inputId = ns("TPM_mean"),
      #            label = "Select features with TPM mean >= to : ", min = 0, max = 20, value = 2),
+    box(title = "Thresholds",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+        status = "primary",width= 12,
+    fluidRow(column(width = 6,
     numericInput(inputId = ns("TPM_filter"),
-                 label = "Select features with TPM value >= to : ", min = 0, max = 20, value = 2),
-    numericInput(inputId = ns("nsamples"),
-                 label = "in at least 'value' % of samples : ", min = 0, max = 20, value = 10),
+                 label = "Select features with TPM value >= to : ", min = 0, max = 20, value = 2)),
+    column(width = 6,numericInput(inputId = ns("nsamples"),
+                 label = "in at least 'value' % of samples : ", min = 0, max = 20, value = 10)))),
+    box(title = "Filtered table",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+        status = "primary",width= 12,
     fluidRow(
       column(
-      width = 9,
+      width = 12,
       progressBar(
         id = ns("pbar"), value = 100,
         total = 100, display_pct = TRUE
       ),
-      tags$h1("Filtered data table :"),
-      DT::dataTableOutput(outputId = ns("table")),
+      DT::dataTableOutput(outputId = ns("table"))),
      ) # end of column
     ) # end of FluidRow
 
