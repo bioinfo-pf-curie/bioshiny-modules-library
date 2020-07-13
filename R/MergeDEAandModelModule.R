@@ -22,9 +22,9 @@ MergedDeaModUI <- function(id)  {
   ns <- NS(id)
     fluidPage(
       tags$head(
-        tags$style(type='text/css', ".span16 { width: 1610px; }")),
+        tags$style(type='text/css', ".span161 { width: 850px; }")),
       br(),
-      div(class = "span16",
+      div(class = "span161",
           tabsetPanel(type = "pills",id = "DEGtabs",
                       tabPanel("RUN DEA",
       #fluidRow(
