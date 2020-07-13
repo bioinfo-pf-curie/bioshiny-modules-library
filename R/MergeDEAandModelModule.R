@@ -15,9 +15,7 @@
 #' @importFrom htmltools tagList tags singleton
 #' @importFrom shinydashboard infoBoxOutput
 #' @importFrom shiny NS actionButton icon uiOutput
-#'
-#'
-#'
+#' @importFrom shinyWidgets updatePickerInput pickerInput
 
 
 MergedDeaModUI <- function(id)  {
@@ -49,13 +47,72 @@ MergedDeaModUI <- function(id)  {
           column(width=6,
                  uiOutput(ns("Group1")),
                  textOutput(ns("group1table")),
-                 selectInput(ns("remove1"),"remove samples from Group 1",multiple = TRUE,selected = NULL,choices = NULL),
-                 selectInput(ns("move1"),"Move samples to Group 2",multiple = TRUE,selected = NULL,choices = NULL)),
+                 #selectInput(ns("remove1"),"remove samples from Group 1",multiple = TRUE,selected = NULL,choices = NULL),
+                 #selectInput(ns("move1"),"Move samples to Group 2",multiple = TRUE,selected = NULL,choices = NULL)),
+          pickerInput(
+            ns("move1"),
+            label = "Move samples to Group 2",
+            choices = NULL,
+            selected = NULL,
+            multiple = TRUE,
+            choicesOpt = NULL,
+            inline = FALSE,
+            options = pickerOptions(
+              actionsBox = TRUE,
+              title = "Select samples to move",
+              liveSearch = TRUE,
+              liveSearchStyle = "contains",
+            )
+          ),
+          pickerInput(
+            ns("remove1"),
+            label = "remove samples from Group1",
+            choices = NULL,
+            options = pickerOptions(
+              actionsBox = TRUE,
+              title = "Select samples to remove",
+              liveSearch = TRUE,
+              liveSearchStyle = "contains",
+            ),
+            selected = NULL,
+            multiple = TRUE,
+            choicesOpt = NULL,
+            inline = FALSE
+          )),
           column(width = 6,uiOutput(ns("Group2")),
                  textOutput(ns("group2table")),
-                 selectInput(ns("remove2"),"remove samples from Group 1",multiple = TRUE,selected = NULL,choices = NULL),
-                 selectInput(ns("move2"),"Move samples to Group 2",multiple = TRUE,selected = NULL,choices = NULL))
-      ),
+                 # selectInput(ns("remove2"),"remove samples from Group 1",multiple = TRUE,selected = NULL,choices = NULL),
+                 # selectInput(ns("move2"),"Move samples to Group 2",multiple = TRUE,selected = NULL,choices = NULL))
+                 pickerInput(
+                   ns("move2"),
+                   label = "Move samples to Group 1",
+                   choices = NULL,
+                   selected = NULL,
+                   multiple = TRUE,
+                   choicesOpt = NULL,
+                   inline = FALSE,
+                   options = pickerOptions(
+                     actionsBox = TRUE,
+                     title = "Select samples to move",
+                     liveSearch = TRUE,
+                     liveSearchStyle = "contains"
+                   )
+                 ),
+                 pickerInput(
+                   ns("remove2"),
+                   label = "remove samples from Group 2",
+                   choices = NULL,
+                   options = pickerOptions(
+                     actionsBox = TRUE,
+                     title = "Select samples to remove",
+                     liveSearch = TRUE,
+                     liveSearchStyle = "contains",
+                   ),
+                   selected = NULL,
+                   multiple = TRUE,
+                   choicesOpt = NULL,
+                   inline = FALSE
+                 ))),
       br(),
       br(),
       actionButton(ns("Build"),"Build Model")
@@ -140,6 +197,7 @@ tabPanel("DEA results",
 #' @importFrom shiny renderUI modalDialog observeEvent reactiveValues callModule observe icon
 #' @import limma
 #' @importFrom ggrepel geom_text_repel
+#' @importFrom shinyWidgets updatePickerInput pickerInput pickerOptions
 
 MergedDeaModServer <- function(input, output, session, matrix = NULL,sampleplan = NULL, var = NULL) {
 
@@ -295,19 +353,38 @@ observeEvent(input$remove1,{
 
     observe({
       if(!is.null(groups$Group1)){
-        updateSelectInput(session = session,
-                          "remove1","remove samples from Group 1",selected = NULL,choices = groups$Group1)
-        updateSelectInput(session = session,
+        # updateSelectInput(session = session,
+        #                   "remove1","remove samples from Group 1",selected = NULL,choices = groups$Group1)
+        # updateSelectInput(session = session,
+        #                   "move1","Move samples to Group 2",selected = NULL,choices = groups$Group1)
+        updatePickerInput(session = session,
+                          "remove1","remove samples from Group 1",selected = NULL,choices = groups$Group1,
+                          pickerOptions(
+                            actionsBox = TRUE,
+                            title = "Select samples to remove",
+                            header = "This is a title"
+                          ))
+        updatePickerInput(session = session,
                           "move1","Move samples to Group 2",selected = NULL,choices = groups$Group1)
+
       }
     })
 
     observe({
       if(!is.null(groups$Group2)){
-        updateSelectInput(session = session,
-                          "remove2","remove samples from Group 2",selected = NULL,choices = groups$Group2)
-        updateSelectInput(session = session,
-                          "move2","Move samples to Group 1 ",selected = NULL,choices = groups$Group2)
+        # updateSelectInput(session = session,
+        #                   "remove2","remove samples from Group 2",selected = NULL,choices = groups$Group2)
+        # updateSelectInput(session = session,
+        #                   "move2","Move samples to Group 1 ",selected = NULL,choices = groups$Group2)
+        updatePickerInput(session = session,
+                          "remove2","remove samples from Group 2",selected = NULL,choices = groups$Group2,
+                          pickerOptions(
+                            actionsBox = TRUE,
+                            title = "Select samples to remove"
+                          ))
+        updatePickerInput(session = session,
+                          "move2","Move samples to Group 1",selected = NULL,choices = groups$Group2)
+
       }
     })
 
