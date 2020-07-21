@@ -229,7 +229,8 @@ observeEvent(input$remove1,{
     })
 
     observeEvent(c(input$var,
-                   input$covar
+                   input$covar,
+                   input$ok
     ),{
       if(!is.null(sampleplanmodel$table)){
         if(!is.null(input$var)){
@@ -242,20 +243,28 @@ observeEvent(input$remove1,{
             if(input$covar != ""){
               print("with covar")
               vector <- c(input$var,input$covar)
+              if(input$var != "Create your own groups"){
               formula <- as.formula(
                 paste0('~0+',input$var,"+",paste0(input$covar,collapse = "+"),"+",
-                       paste0(combn(vector,2,FUN = paste,collapse =":"),collapse = "+")
-                )
-              )
+                       paste0(combn(vector,2,FUN = paste,collapse =":"),collapse = "+"))
+              )} else if (input$var == "Create your own groups"){
+                formula <- as.formula(
+                  paste0('~0+',"personalisedGroup","+",paste0(input$covar,collapse = "+"),"+",
+                         paste0(combn(vector,2,FUN = paste,collapse =":"),collapse = "+"))
+              )} } else {
 
-            } else if(!is.null(input$var)){
-              print("without covar")
+              if(input$var != "Create your own groups"){
+                print("without covar")
               formula <- as.formula(
                 paste0('~0+',as.character(input$var))
-              )
-
+              )} else if (input$var == "Create your own groups"){
+                print("without covar")
+                formula <- as.formula(
+                  paste0('~0+',"personalisedGroup"))
+              }
             }
             reactives$formula <- formula
+            print(reactives$formula)
           }}}
 
     })
@@ -270,6 +279,12 @@ observeEvent(input$remove1,{
               if(!is.null(matrix$table)){
                 if(!is.null(reactives$formula)){
                   data <- sampleplanmodel$table
+                  if (input$var == "Create your own groups"){
+                  data[groups$Group2,"personalisedGroup"] <- "Group2"
+                  data[groups$Group1,"personalisedGroup"] <- "Group1"
+                  completeVec <- complete.cases(data[,"personalisedGroup"])
+                  data <- data[completeVec,]
+                  }
                   mat <- matrix$table[,rownames(data)]
                   design <- model.matrix(reactives$formula, data=data)
                   design <- design[which(rownames(design) %in% colnames(mat)), ]
@@ -280,9 +295,13 @@ observeEvent(input$remove1,{
                   print(input$Group1sel)
                   print("group2sel")
                   print(input$Group2sel)
+                  if (input$var == "Create your own groups"){
+                  contrast <-makeContrasts(contrasts = paste0(paste0("personalisedGroup","Group1"),"-",(paste0("personalisedGroup","Group2"))) ,
+                                           levels=design)
+                  } else {
                   contrast <-makeContrasts(contrasts = paste0(paste0(input$var,input$Group1sel),"-",(paste0(input$var,input$Group2sel))) ,
                                            levels=design)
-
+                  }
                   reactives$contrast <- contrast
                   reactives$design <- design
                 }
@@ -303,7 +322,7 @@ observeEvent(input$remove1,{
     output$var <- renderUI({
 
       tagList(
-        selectInput(ns("var"),"Variable of interest :",choices = var,
+        selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
                     multiple = FALSE, selected = var[1])
       )
     })
@@ -338,25 +357,61 @@ observeEvent(input$remove1,{
 
     output$Group1 <- renderUI({
       tagList(
+        if(!is.null(input$var)) {
+        #if(length(input$var) != 0) {
+        if(input$var != "Create your own groups"){
         selectInput(ns("Group1sel"),"Group 1", choices = na.omit(levels(sampleplan$table[,input$var])),
                     selected= na.omit(levels(sampleplanmodel$table[,input$var])[1]))
 
-      )
+        # } else if (input$var == "Create your own groups"){
+        #
+        #
+        }
+        }
+        )
     })
 
     observe({
 
+      if(!is.null(input$var)) {
+      if(input$var != "Create your own groups"){
       groups$Group1 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group1sel),])
+      } else if (input$var == "Create your own groups"){
+      showModal(modalDialog(
+      title = "Select Samples to add to group1",
+      fluidRow(
+      column(width = 6,
+      checkboxGroupInput(ns("createGroup1"), "select samples to add in group 2",
+                         choices = rownames(sampleplanmodel$table),
+                         selected = NULL)),
+      column(width = 6,
+             checkboxGroupInput(ns("createGroup2"), "select samples to add in group 2",
+                                                  choices = rownames(sampleplanmodel$table),
+                                                  selected = NULL)
+      )),
+      easyClose = TRUE,
+      footer = tagList(
+        modalButton(ns("Cancel")),
+        actionButton(ns("ok"),"OK")
+      )
+      ))
+      }
+      }
     })
 
+    observeEvent(input$ok,{
+      groups$Group1 <- rownames(sampleplanmodel$table)[which(rownames(sampleplanmodel$table) %in% input$createGroup1)]
+      groups$Group2 <- rownames(sampleplanmodel$table)[which(rownames(sampleplanmodel$table) %in% input$createGroup2)]
+      print("groupsĜroup1 created")
+      print(groups$Group1)
+      print("groupsĜroup2 created")
+      print(groups$Group2)
+      removeModal()
+    })
 
 
     observe({
       if(!is.null(groups$Group1)){
-        # updateSelectInput(session = session,
-        #                   "remove1","remove samples from Group 1",selected = NULL,choices = groups$Group1)
-        # updateSelectInput(session = session,
-        #                   "move1","Move samples to Group 2",selected = NULL,choices = groups$Group1)
         updatePickerInput(session = session,
                           "remove1","remove samples from Group 1",selected = NULL,choices = groups$Group1,
                           pickerOptions(
@@ -372,10 +427,6 @@ observeEvent(input$remove1,{
 
     observe({
       if(!is.null(groups$Group2)){
-        # updateSelectInput(session = session,
-        #                   "remove2","remove samples from Group 2",selected = NULL,choices = groups$Group2)
-        # updateSelectInput(session = session,
-        #                   "move2","Move samples to Group 1 ",selected = NULL,choices = groups$Group2)
         updatePickerInput(session = session,
                           "remove2","remove samples from Group 2",selected = NULL,choices = groups$Group2,
                           pickerOptions(
@@ -396,15 +447,22 @@ observeEvent(input$remove1,{
 
     output$Group2 <- renderUI({
       tagList(
+        if(input$var != "Create your own groups"){
         selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(sampleplan$table[,input$var])),
                     selected = na.omit(levels(sampleplanmodel$table[,input$var])[2]) )
+        }
       )
 
     })
 
 
     observe({
+      if(!is.null(input$var)) {
+        #if(length(input$var) != 0) {
+        if(input$var != "Create your own groups"){
       groups$Group2 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group2sel),])
+      }
+      }
     })
 
     output$group2table <- renderText({
@@ -413,6 +471,8 @@ observeEvent(input$remove1,{
 
 
     observeEvent(c(input$Group1sel,input$Group2sel),ignoreInit = TRUE,{
+      if(!is.null(input$Group1sel)){
+      #if(length(input$Group1sel) != 0){
       if(input$Group1sel != "" & input$Group2sel != ""){
         if(input$Group1sel == input$Group2sel){
           print("group1")
@@ -425,6 +485,7 @@ observeEvent(input$remove1,{
                                   modalButton("Got it"),
                                 )))
         }
+      }
       }
     })
 
