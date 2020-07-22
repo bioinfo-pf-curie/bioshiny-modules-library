@@ -753,6 +753,7 @@ output$scatter <- renderPlot({
 
 
 observeEvent(input$GeneVolcano,{
+
   req(matrix$table)
   req(sampleplanmodel$table)
   groups <- sampleplanmodel$table
@@ -767,6 +768,7 @@ observeEvent(input$GeneVolcano,{
   boxplotdata$Samples <- as.character(boxplotdata$Samples)
   boxplotdata <- inner_join(boxplotdata,groups, by = "Samples")
   boxplotdata$COUNTS <- as.numeric(boxplotdata$COUNTS)
+  boxplotdata[,input$var] <- as.character(boxplotdata[,input$var])
 
   results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
     geom_boxplot() +
@@ -774,7 +776,7 @@ observeEvent(input$GeneVolcano,{
                                            seed = 1234),
              pch=21,
              # size = 2,
-             aes(fill=Group), show.legend = T)
+             aes_string(fill=input$var), show.legend = T)
 
 })
 
