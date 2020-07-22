@@ -22,11 +22,15 @@ MergedDeaModUI <- function(id)  {
   ns <- NS(id)
     fluidPage(
       tags$head(
-        tags$style(type='text/css', ".span161 { width: 850px; }")),
+        tags$style(type='text/css', ".span161 { width: 850px; }"),
+        tags$style("#test .modal-dialog {height: 1000px !important;}")
+      ),
       br(),
-      div(class = "span161",
+      fluidRow(
+      #div(class = "span161",
           tabsetPanel(type = "pills",id = "DEGtabs",
-                      tabPanel("RUN DEA",
+      tabPanel("RUN DEA",
+      br(),
       #fluidRow(
       box(title = "Creates DEG model",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "primary",width= 12,
@@ -119,7 +123,7 @@ MergedDeaModUI <- function(id)  {
     ), # end of first tabs
 
 tabPanel("DEA results",
-          br(),
+    br(),
     tagList(
       box(title = span(icon("cogs"), "Parameters"),collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "success",width= 12,
@@ -142,7 +146,25 @@ tabPanel("DEA results",
           column(width =6,plotOutput(ns("scatter")))),
           br(),
           br(),
-          fluidRow(column(width = 12,plotOutput(ns("Volcano"))))
+          fluidRow(column(width = 12,
+                          pickerInput(ns("GeneVolcano"),"Select Genes to annotate on volcano",
+                                      selected = NULL,
+                                      multiple = TRUE,
+                                      choicesOpt = NULL,
+                                      inline = FALSE,
+                                      choices = NULL,
+                                      options = pickerOptions(
+                                        title = "Select samples to annotate",
+                                        liveSearch = TRUE,
+                                        liveSearchStyle = "contains",
+                                      ))
+                  )),
+          fluidRow(column(width = 12,
+                          plotOutput(ns("Volcano"))),
+                   column(width = 12,
+                          plotOutput(ns("boxplots"))))
+                          #girafeOutput(ns("Volcano"))))
+
 
       #)
       #)
@@ -175,7 +197,8 @@ tabPanel("DEA results",
     ) # end of Taglist
 ) # end of second tab
 )
-) # end of div
+#) # end of div
+) # end of fluidRow
 ) # end of FLuidPage
 }
 
@@ -197,7 +220,9 @@ tabPanel("DEA results",
 #' @importFrom shiny renderUI modalDialog observeEvent reactiveValues callModule observe icon
 #' @import limma
 #' @importFrom ggrepel geom_text_repel
+#' @importFrom tidyr gather
 #' @importFrom shinyWidgets updatePickerInput pickerInput pickerOptions
+#' @import dplyr
 
 MergedDeaModServer <- function(input, output, session, matrix = NULL,sampleplan = NULL, var = NULL) {
 
@@ -209,7 +234,7 @@ ns <- session$ns
 reactives <- reactiveValues(design = NULL, formula = NULL, contrast = NULL)
 groups <- reactiveValues(Group1 = NULL, Group2 = NULL)
 sampleplanmodel <- reactiveValues(table = sampleplan$table)
-results <- reactiveValues(res = NULL, up = NULL, down = NULL,nsignfc = NULL,v = NULL)
+results <- reactiveValues(res = NULL, up = NULL, down = NULL,nsignfc = NULL,v = NULL,boxplots = NULL)
 
 observeEvent(input$remove1,{
       sampleplanmodel$table[input$remove1,input$var] <- "removed"
@@ -377,8 +402,11 @@ observeEvent(input$remove1,{
       if(input$var != "Create your own groups"){
       groups$Group1 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group1sel),])
       } else if (input$var == "Create your own groups"){
-      showModal(modalDialog(
-      title = "Select Samples to add to group1",
+
+      showModal(
+      fluidRow(
+      modalDialog(
+      title = "Create two groups for differential analysis",
       fluidRow(
       column(width = 6,
       checkboxGroupInput(ns("createGroup1"), "select samples to add in group 2",
@@ -394,7 +422,9 @@ observeEvent(input$remove1,{
         modalButton(ns("Cancel")),
         actionButton(ns("ok"),"OK")
       )
-      ))
+      ) # end of fluidRow
+      )
+      )
       }
       }
     })
@@ -535,11 +565,14 @@ observeEvent(input$remove1,{
                        fit2 <- eBayes(fit2)
                        res <- topTable(fit2, number=nrow(counts), adjust.method=input$AdjMeth)
                        res <- res[order(res$adj.P.Val),]
-                       rownames(res) <- res$genes
-                       res$genes  <- NULL
+                       # print("initial res ")
+                       # print(res)
+                       res$genes <- rownames(res)
                        #res$label <- rownames(res)
-                       print(head(res))
+                       # print("genes")
+                       # print(rownames(head(res)))
                        results$res <- res
+
 
                      } else if( input$DEAmeth == "DEseq2") {
 
@@ -590,11 +623,17 @@ observeEvent(input$remove1,{
   })
 
 #output$Pvals_distrib <- renderGirafe({
-output$Volcano <- renderPlot({
-#output$Volcano <- renderGirafe({
 
+#input$GeneVolcano
+observe({
+updatePickerInput("GeneVolcano", session = session, choices = rownames(matrix$table))
+})
 
-  results$res$label <- rownames(results$res)
+Volcano <- reactiveValues(plot = NULL)
+observe({
+  req(results$res)
+  # print("labels")
+  # results$res$genes <- rownames(results$res)
   #ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value), label = adj.P.Val)) +
   ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(adj.P.Val))) +
   #ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value))) +
@@ -623,18 +662,79 @@ output$Volcano <- renderPlot({
     theme_linedraw() +
     theme(panel.grid = element_blank()) +
     xlab("Fold change (log2)") +
-    ylab("-log10(P-Value)") #+
-    ggrepel::geom_text_repel(
-      data = subset(results$res, adj.P.Val < input$PvalsT),
+    ylab("-log10(P-Value)")
+
+  Volcano$plot <- ggplot
+})
+
+output$Volcano <- renderPlot({
+
+  req(Volcano$plot)
+    ggplot <- Volcano$plot +
+      geom_point(data = subset(results$res,genes %in% input$GeneVolcano),
+                 color = "purple", alpha = 0.6) +
+      ggrepel::geom_text_repel(
+      #data = subset(results$res, adj.P.Val < input$PvalsT),
+      #data = results$res[which(rownames(results$res) %in% input$GeneVolcano),],
+      data = subset(results$res,genes %in% input$GeneVolcano),
       #aes(label = results$res$label),
-      aes(label = label),
+      aes(label = genes),
       size = 5,
+      force = 2,
       box.padding = unit(0.35, "lines"),
       point.padding = unit(0.3, "lines")
     )
   return(ggplot)
+    # ggplot_labeled <- gglabeller(ggplot, aes(label = rownames(results$res)))
+    # return(ggplot_labeled)
+
   #girafe(code = {print(ggplot)})
 })
+
+
+# output$Volcano <- renderGirafe({
+#
+#   results$res$label <- rownames(results$res)
+#   ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value), label = genes)) +
+#   #ggplot <- ggiraph::ggiraph(results$res, aes(x = logFC, y = -log10(adj.P.Val))) +
+#     #ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value))) +
+#     ggtitle(colnames(reactives$contrast)) +
+#     scale_fill_gradient(low = "lightgray", high = "navy") +
+#     scale_color_gradient(low = "lightgray", high = "navy") +
+#     #scale_y_continuous(trans = revlog_trans(), expand = c(0.005, 0.005)) +
+#     expand_limits(y = c(min(-log10(results$res$P.Value)), 1)) +
+#     stat_density_2d(aes(fill = ..level..), geom = "polygon",
+#                     show.legend = FALSE) +
+#     geom_point(data = results$res,
+#                color = "grey", alpha = 0.5) +
+#     #geom_point(data = subset(results$res, logFC > input$FCT  & adj.P.Val > input$PvalsT),
+#     geom_point_interactive(data = subset(results$res, logFC > input$FCT),
+#                color = "red", alpha = 0.5) +
+#     geom_point_interactive(data = subset(results$res, logFC < -input$FCT),
+#                color = "blue", alpha = 0.5) +
+#     geom_point_interactive(data = subset(results$res, adj.P.Val < input$PvalsT),
+#                #geom_point(data = subset(results$res, label < input$PvalsT),
+#                color = "green", alpha = 0.5) +
+#     #geom_text_repel() +
+#     geom_vline_interactive(xintercept = min(-log10(results$res$P.Value))) +
+#     geom_hline_interactive(yintercept = min(-log10(results$res$P.Value))) +
+#     geom_hline_interactive(yintercept = -log10(input$PvalsT), linetype = "dashed") +
+#     geom_vline_interactive(xintercept = c(-input$FCT, input$FCT), linetype = "dashed") +
+#     theme_linedraw() +
+#     theme(panel.grid = element_blank()) +
+#     xlab("Fold change (log2)") +
+#     ylab("-log10(P-Value)") #+
+#   ggrepel::geom_text_repel(
+#     data = subset(results$res, adj.P.Val < input$PvalsT),
+#     #aes(label = results$res$label),
+#     aes(label = label),
+#     size = 5,
+#     box.padding = unit(0.35, "lines"),
+#     point.padding = unit(0.3, "lines")
+#   )
+#
+#   girafe(code = {print(ggplot)})
+# })
 
 output$scatter <- renderPlot({
 
@@ -650,6 +750,36 @@ output$scatter <- renderPlot({
   return(ggplot)
 
 })
+
+
+observeEvent(input$GeneVolcano,{
+  req(matrix$table)
+  req(sampleplanmodel$table)
+  groups <- sampleplanmodel$table
+  groups$Samples <- rownames(groups)
+  groups <- groups[,c(input$var,"Samples")]
+  print(head(groups))
+  boxplotdata <- results$v$E[which(rownames(results$v$E) %in% input$GeneVolcano),]
+  boxplotdata <- rbind(boxplotdata,colnames(boxplotdata))
+  rownames(boxplotdata)[nrow(boxplotdata)] <- "Samples"
+  boxplotdata <- as.data.frame(t(boxplotdata)) %>%  gather(key = "GENE",value = "COUNTS", -Samples)
+  boxplotdata$Samples <- as.character(boxplotdata$Samples)
+  boxplotdata <- inner_join(boxplotdata,groups, by = "Samples")
+  print(head(boxplotdata))
+
+
+  results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
+    geom_boxplot()
+  #+
+    # geom_point(position=position_jitterdodge(jitter.width=2, dodge.width = 0.2,
+    #                                          seed = 1234),
+    #            #pch=21,
+    #            # size = 2,
+    #            aes(fill=factor(Group)), show.legend = T)
+
+})
+
+  output$boxplots <- renderPlot(results$boxplots)
 
   output$results_table <- DT::renderDataTable({datatable(
     results$restable,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
