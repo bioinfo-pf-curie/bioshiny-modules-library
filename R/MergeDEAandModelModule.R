@@ -770,11 +770,11 @@ observeEvent(input$GeneVolcano,{
 
   results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
     geom_boxplot() +
-  geom_point(position=position_jitterdodge(jitter.width=2, dodge.width = 0.2,
+  geom_point(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
                                            seed = 1234),
-             #pch=21,
+             pch=21,
              # size = 2,
-             aes(fill=factor(Group)), show.legend = T)
+             aes(fill=Group), show.legend = T)
 
 })
 
