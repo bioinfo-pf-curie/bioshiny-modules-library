@@ -763,19 +763,18 @@ observeEvent(input$GeneVolcano,{
   boxplotdata <- rbind(boxplotdata,colnames(boxplotdata))
   rownames(boxplotdata)[nrow(boxplotdata)] <- "Samples"
   boxplotdata <- as.data.frame(t(boxplotdata)) %>%  gather(key = "GENE",value = "COUNTS", -Samples)
+  #boxplotdata <- as.data.frame(t(boxplotdata)) %>%  gather(key = "GENE",value = "COUNTS")
   boxplotdata$Samples <- as.character(boxplotdata$Samples)
   boxplotdata <- inner_join(boxplotdata,groups, by = "Samples")
-  print(head(boxplotdata))
-
+  boxplotdata$COUNTS <- as.numeric(boxplotdata$COUNTS)
 
   results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
-    geom_boxplot()
-  #+
-    # geom_point(position=position_jitterdodge(jitter.width=2, dodge.width = 0.2,
-    #                                          seed = 1234),
-    #            #pch=21,
-    #            # size = 2,
-    #            aes(fill=factor(Group)), show.legend = T)
+    geom_boxplot() +
+  geom_point(position=position_jitterdodge(jitter.width=2, dodge.width = 0.2,
+                                           seed = 1234),
+             #pch=21,
+             # size = 2,
+             aes(fill=factor(Group)), show.legend = T)
 
 })
 
