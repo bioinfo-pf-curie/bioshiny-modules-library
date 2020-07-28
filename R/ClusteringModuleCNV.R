@@ -40,7 +40,7 @@ ClusteringUICNV <- function(id){
           shiny::conditionalPanel("input.showSampleCNV ==1",ns =ns,hr(), shiny::uiOutput(ns('sampleCNV'))),
           # br(),
           htmltools::hr(),htmltools::h4('Data Preprocessing'),
-          shiny::column(width=4,shiny::selectizeInput(ns('transposeCNV'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
+          #shiny::column(width=4,shiny::selectizeInput(ns('transposeCNV'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
           shiny::column(width=4,shiny::selectizeInput(ns("transform_funCNV"), "Transform", c(Identity=".",Sqrt='sqrt',log='log',Scale='scale',Normalize='normalize',Percentize='percentize',"Missing values"='is.na10', Correlation='cor'),selected = '.')),
           shiny::uiOutput(ns('annoVarsCNV')),
 
@@ -372,7 +372,7 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
   #
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
 
-    if(input$transposeCNV) data.in=t(data.in)
+    #if(input$transposeCNV) data.in=t(data.in)
     if(input$transform_funCNV!='.'){
       if(input$transform_funCNV=='is.na10'){
         shiny::updateCheckboxInput(session = session,inputId = ns('showColorCNV'),value = TRUE)

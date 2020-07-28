@@ -36,8 +36,10 @@ ClusteringUI <- function(id){
           shiny::checkboxInput(ns('showSample'),'Subset Data'),
           shiny::conditionalPanel('input.showSample == 1',ns = ns,hr(),shiny::uiOutput(ns('sample'))),
           htmltools::hr(),htmltools::h4('Data Preprocessing'),
-          shiny::column(width=4,shiny::selectizeInput(ns('transpose'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
+          #shiny::column(width=4,shiny::selectizeInput(ns('transpose'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
           shiny::column(width=4,shiny::selectizeInput(ns("transform_fun"), "Transform", c(Identity=".",Sqrt='sqrt',log='log',Scale='scale',Normalize='normalize',Percentize='percentize',"Missing values"='is.na10', Correlation='cor'),selected = '.')),
+
+
           shiny::uiOutput(ns('annoVars')),
 
           htmltools::br(),htmltools::hr(),htmltools::h4('Row dendrogram'),
@@ -180,11 +182,12 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
   reactives <- reactiveValues(obj =  data$table, metadata = metadata$table,variableFeatures = genefilter::rowVars(vst))
   reactives2 <- reactiveValues(selData = data$table)
 
+print("dataClst")
+print(head(data$table))
+print("metaclust")
+print(head(metadata$table))
 
   if (!is.null(data)){
-
-
-   ## End of was commented
 
   shiny::observeEvent(reactives2$selData,{
     output$annoVars<-shiny::renderUI({
@@ -334,7 +337,7 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
 
-    if(input$transpose) data.in=t(data.in)
+    #if(input$transpose) data.in=t(data.in)
     if(input$transform_fun!='.'){
       if(input$transform_fun=='is.na10'){
         shiny::updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
