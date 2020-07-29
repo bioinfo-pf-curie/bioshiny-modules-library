@@ -183,23 +183,10 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
 
   ns <- session$ns
 
-
-  observeEvent(input$showSampleCNV,{
-    print("input showSampleCNV : ")
-    print(input$showSampleCNV)
-  })
-
   reactives <- reactiveValues(obj =  data$table, metadata = metadata$table)
-  #print("reactives$metadata in module")
-  #print(head(reactives$metadata))
   reactives2 <- reactiveValues(selData = data$table)
-#print(reactives$metadata)
-
 
   if (!is.null(data)){
-
-
-   ## End of was commented
 
   shiny::observeEvent(reactives2$selData,{
     output$annoVarsCNV<-shiny::renderUI({
@@ -368,8 +355,6 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
 
     }
 
-  #
-  #
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
 
     #if(input$transposeCNV) data.in=t(data.in)
@@ -456,9 +441,7 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
     }
 
   })
-  #
-  #
-  #
+
   shiny::observeEvent(reactives2$selData,{
     output$heatoutCNV <- plotly::renderPlotly({
       interactiveHeatmapCNV()

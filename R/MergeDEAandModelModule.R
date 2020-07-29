@@ -26,6 +26,7 @@ MergedDeaModUI <- function(id)  {
         tags$style("#test .modal-dialog {height: 1000px !important;}")
       ),
       br(),
+      fluidPage(
       fluidRow(
       #div(class = "span161",
           tabsetPanel(type = "pills",id = "DEGtabs",
@@ -122,13 +123,13 @@ MergedDeaModUI <- function(id)  {
       actionButton(ns("Build"),"Build Model")
     ), # end of first tabs
 
-tabPanel("DEA results",
+tabPanel("Figures",
     br(),
     tagList(
       box(title = span(icon("cogs"), "Parameters"),collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "success",width= 12,
       fluidRow(
-        column(width = 6,selectInput(ns("DEAmeth"),"Select a package for DEA analysis",choices = c("DEseq2","limma"), selected = "limma")),
+        #column(width = 6,selectInput(ns("DEAmeth"),"Select a package for DEA analysis",choices = c("DEseq2","limma"), selected = "limma")),
         #column(width = 6,selectInput(ns("transformed"),"Perform DEA on ",choices = c("Raw data","Rlog Data","VST Data")))
       ),
       fluidRow(
@@ -154,7 +155,7 @@ tabPanel("DEA results",
                                       inline = FALSE,
                                       choices = NULL,
                                       options = pickerOptions(
-                                        title = "Select samples to annotate",
+                                        title = "Select genes to annotate",
                                         liveSearch = TRUE,
                                         liveSearchStyle = "contains",
                                       ))
@@ -162,42 +163,55 @@ tabPanel("DEA results",
           fluidRow(column(width = 12,
                           plotOutput(ns("Volcano"))),
                    column(width = 12,
+                          conditionalPanel("input.GeneVolcano != undifined && input.GeneVolcano.length <= 1", ns = ns,
+                                           #textOutput(ns('boxplots_error'))))
+                                           textOutput(ns('boxplots_error'))),
+                          conditionalPanel("input.GeneVolcano != undifined && input.GeneVolcano.length >=2", ns = ns,
+                          #plotOutput(ns("boxplots"))),
                           plotOutput(ns("boxplots"))))
+
+
+
+                   )
                           #girafeOutput(ns("Volcano"))))
 
 
       #)
       #)
-      ),
-      box(title = span(icon("arrow-circle-down"),"Tables"),collapsible = TRUE, collapsed = TRUE,solidHeader = TRUE,
-          status = "success",width= 12,
-          #fluidRow(plotOutput(ns("Volcano"))),
-          fluidRow(
-            tags$head(tags$style(".butt{background-color:#2E8B57;}")),
-            column(width =4,
-                   h4("All genes :",style="padding-left:20px"),
-                   br(),
-                   DT::dataTableOutput(ns('results_table')),
-                   downloadButton(ns("resdl"),"All genes",class = "butt")),
-            #tags$br(),
-
-            column(width = 4,
-                   h4("Upp regulated genes :",style="padding-left:20px"),
-                   br(),
-                   DT::dataTableOutput(ns('up_table')),
-                   downloadButton(ns("uppdl"),"Up-regulated",class = "butt")),
-            #tags$br(),
-            column(width = 4,
-                   h4("Down regulated genes :",style="padding-left:20px"),
-                   br(),
-                   DT::dataTableOutput(ns('down_table')),
-                   downloadButton(ns("downdl"),"Down-regulated",class = "butt"))
-            )#,
-      ) # end of box
+      )
     ) # end of Taglist
-) # end of second tab
+), # end of second tab
+tabPanel("Tables",
+         br(),
+         box(title = span(icon("arrow-circle-down"),"Tables"),collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+             status = "success",width= 12,
+             #fluidRow(plotOutput(ns("Volcano"))),
+             fluidRow(
+               tags$head(tags$style(".butt{background-color:#2E8B57;}")),
+               column(width =12,
+                      h4("All genes :",style="padding-left:20px"),
+                      br(),
+                      DT::dataTableOutput(ns('results_table')),
+                      downloadButton(ns("resdl"),"All genes",class = "butt")),
+               #tags$br(),
+
+               column(width = 12,
+                      h4("Upp regulated genes :",style="padding-left:20px"),
+                      br(),
+                      DT::dataTableOutput(ns('up_table')),
+                      downloadButton(ns("uppdl"),"Up-regulated",class = "butt")),
+               #tags$br(),
+               column(width = 12,
+                      h4("Down regulated genes :",style="padding-left:20px"),
+                      br(),
+                      DT::dataTableOutput(ns('down_table')),
+                      downloadButton(ns("downdl"),"Down-regulated",class = "butt"))
+             )#,
+         ) # end of box
+) # end of 3 tab
 )
 #) # end of div
+)
 ) # end of fluidRow
 ) # end of FLuidPage
 }
@@ -404,7 +418,7 @@ observeEvent(input$remove1,{
       } else if (input$var == "Create your own groups"){
 
       showModal(
-      fluidRow(
+      fluidPage(
       modalDialog(
       title = "Create two groups for differential analysis",
       fluidRow(
@@ -550,7 +564,7 @@ observeEvent(input$remove1,{
 
                      #print(head(matrix$table))
                      counts <- matrix$table[,colnames(matrix$table)%in%rownames(reactives$design)]
-                     if(input$DEAmeth == "limma"){
+                     #if(input$DEAmeth == "limma"){
 
                        for (col in 1:ncol(counts)){
                          counts[,col] <- as.numeric(counts[,col])
@@ -574,9 +588,9 @@ observeEvent(input$remove1,{
                        results$res <- res
 
 
-                     } else if( input$DEAmeth == "DEseq2") {
-
-                     }
+                     # } else if( input$DEAmeth == "DEseq2") {
+                     #
+                     # }
                    } # end of if NULL
                  }) # end of observer
 
@@ -754,33 +768,58 @@ output$scatter <- renderPlot({
 
 observeEvent(input$GeneVolcano,{
 
+  if(length(input$GeneVolcano) >1){
   req(matrix$table)
   req(sampleplanmodel$table)
-  groups <- sampleplanmodel$table
-  groups$Samples <- rownames(groups)
-  groups <- groups[,c(input$var,"Samples")]
-  print(head(groups))
+  groups_table <- sampleplanmodel$table
+  groups_table$Samples <- rownames(groups_table)
+  if(input$var != "Create your own groups"){
+  groups_table <- groups_table[,c(input$var,"Samples")]
+  } else {
+    groups_table[groups$Group2,"personalisedGroup"] <- "Group2"
+    groups_table[groups$Group1,"personalisedGroup"] <- "Group1"
+    completeVec <- complete.cases(groups_table[,"personalisedGroup"])
+    groups_table <- groups_table[completeVec,]
+    groups_table <- groups_table[,c("personalisedGroup","Samples")]
+  }
   boxplotdata <- results$v$E[which(rownames(results$v$E) %in% input$GeneVolcano),]
   boxplotdata <- rbind(boxplotdata,colnames(boxplotdata))
   rownames(boxplotdata)[nrow(boxplotdata)] <- "Samples"
   boxplotdata <- as.data.frame(t(boxplotdata)) %>%  gather(key = "GENE",value = "COUNTS", -Samples)
   #boxplotdata <- as.data.frame(t(boxplotdata)) %>%  gather(key = "GENE",value = "COUNTS")
   boxplotdata$Samples <- as.character(boxplotdata$Samples)
-  boxplotdata <- inner_join(boxplotdata,groups, by = "Samples")
+  boxplotdata <- inner_join(boxplotdata,groups_table, by = "Samples")
   boxplotdata$COUNTS <- as.numeric(boxplotdata$COUNTS)
-  boxplotdata[,input$var] <- as.character(boxplotdata[,input$var])
-
-  results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
-    geom_boxplot() +
-  geom_point(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
-                                           seed = 1234),
-             pch=21,
-             # size = 2,
-             aes_string(fill=input$var), show.legend = T)
-
+  if(input$var != "Create your own groups"){
+    boxplotdata[,input$var] <- as.character(boxplotdata[,input$var])
+    results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
+      geom_boxplot() +
+      theme(legend.position = "none") +
+      geom_point(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
+                                               seed = 1234),
+                 pch=21,
+                 # size = 2,
+                 aes_string(fill=input$var), show.legend = T)
+  } else {
+    boxplotdata[,"personalisedGroup"] <- as.character(boxplotdata[,"personalisedGroup"])
+    results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
+      geom_boxplot() +
+      #theme(legend.position = "none") +
+      geom_point(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
+                                               seed = 1234),
+                 pch=21,
+                 # size = 2,
+                 aes_string(fill="personalisedGroup"), show.legend = T)
+  }
+  }
 })
 
   output$boxplots <- renderPlot(results$boxplots)
+  output$boxplots_error <- renderText({
+    validate(
+    need(length(input$GeneVolcano) >= 2, "Select at least two genes to draw boxplots...")
+  )
+  })
 
   output$results_table <- DT::renderDataTable({datatable(
     results$restable,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
@@ -794,7 +833,6 @@ observeEvent(input$GeneVolcano,{
       write.csv(results$res, file)
     }
   )
-
 
   output$up_table <- DT::renderDataTable({datatable(
     results$up,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})

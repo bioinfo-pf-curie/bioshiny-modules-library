@@ -27,13 +27,13 @@ DrawPCAUI2 <- function(id) {
     ),
     tagList(
     #div(class = "span17",
-    tabsetPanel(
-      tabPanel("Parameters",
+    tabsetPanel(id = ns("pcatabs"),
+      tabPanel("Parameters", id = ns("Parameters"),
                fluidPage(
                 # fillPage(
                    fluidRow(#actionButton(ns("checkdata"),"Check Data"),
                    #fillRow(
-                                    column(4,
+                                    column(12,
                                          p("Select options for the PCA (we are using the ", a("prcomp", href = "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/prcomp.html"), "function):"),
                                          wellPanel(
                                            # NOTE: this is placed on this tab, otherwise each time the slider is moved
@@ -41,31 +41,33 @@ DrawPCAUI2 <- function(id) {
                                            # this if we change to a different type of control
                                            uiOutput(ns('selectNumGenes')),
                                            #tagList(
-                                           checkboxInput(inputId = ns('center'),
-                                                         label = 'Shift variables to be zero-centered',
-                                                         value = TRUE),
-                                           checkboxInput(inputId = ns('scale_data'),
-                                                         label = 'Scale variables to have unit variance',
-                                                         value = TRUE),
-                                           radioButtons(ns('normalization'), 'Normalization',
-                                                        choices = c('None'='NONE',
-                                                                    'Variance Stabilizing Transform (vst)'='vst',
-                                                                    'Regularized logarithm (rlog) - WARNING: this can take considerable time'='rlog'),
-                                                        selected = 'NONE')
+                                           # checkboxInput(inputId = ns('center'),
+                                           #               label = 'Shift variables to be zero-centered',
+                                           #               value = TRUE),
+                                           # checkboxInput(inputId = ns('scale_data'),
+                                           #               label = 'Scale variables to have unit variance',
+                                           #               value = TRUE)#,
+                                           # radioButtons(ns('normalization'), 'Normalization',
+                                           #              choices = c('None'='NONE',
+                                           #                          'Variance Stabilizing Transform (vst)'='vst',
+                                           #                          'Regularized logarithm (rlog) - WARNING: this can take considerable time'='rlog'),
+                                           #              selected = 'NONE')
                                            #)#end of TagList
                                            ) # end wellPanel
-               ),column(6,
-                        wellPanel(
-                          fluidRow(uiOutput(ns("choose_samples_pca")))
-                        )
-               )),
-               fluidRow(actionButton(ns("pcago"),"RunPCA")))
+               ),
+               # column(6,
+               #          wellPanel(
+               #            fluidRow(uiOutput(ns("choose_samples_pca")))
+               #          )
+               # )
+               ),
+               fluidRow(column(width = 12,actionButton(ns("pcago"),"RunPCA"))))
                #fillRow(actionButton(ns("pcago"),"RunPCA")))
 
                #)#end of Taglist
       ), # end  tab
 
-      tabPanel("Plots",
+      tabPanel(title = "Plots", id = ns("Plots"), value = "Plots",
                h3("Scree plot"),
                p("The scree plot shows the variances of each PC, and the cumulative variance explained by each successive PC (in %) "),
                fluidRow(
@@ -123,7 +125,7 @@ DrawPCAUI2 <- function(id) {
                tableOutput(ns("brush_info_after_zoom")))
       ), # end  tab
 
-      tabPanel("Output",
+      tabPanel("Output",id = ns("Output"),
                #fillPage(
                downloadLink(ns("downloadPCAOutput"), "Download PCA output (sample coefficients)"),
                br(),
@@ -131,7 +133,6 @@ DrawPCAUI2 <- function(id) {
                p("Output of the PCA function:"),
                fluidRow(verbatimTextOutput(ns("pca_details")))#)
       ), # end  tab
-      id="mainTabPanel",
       selected="Parameters"
     #)# end of div
     ) # end tabsetPanel
@@ -329,7 +330,8 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
 
 
                      # Keep the selected samples
-                     samples <- input$samples
+                     #samples <- input$samples
+                     samples <- NULL
                      # if the samples have not been selected, use all
                      if (is.null(samples)) {
                        samples <- rownames(the_data)
@@ -340,7 +342,8 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
                      # subselect the samples
 
                      the_data_subset <-
-                       the_data[which(rownames(the_data) %in% samples),]
+                       #the_data[which(rownames(the_data) %in% samples),]
+                       the_data
                      incProgress(0.1)
 
                      # remove columns with 0 variance:
@@ -362,7 +365,8 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
                      the_data_subset <- the_data_subset[,select_genes]
 
                      # normalize, if we were requested to do so
-                     normalization <- input$normalization
+                     #normalization <- input$normalization
+                     normalization <- 'NONE'
                      if (normalization == 'rlog') {
                        print("proceeding with rlog transformation")
                        library(DESeq2)
@@ -397,8 +401,10 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
                      # from http://rpubs.com/sinhrks/plot_pca
                      pca_output <- prcomp(
                        na.omit(the_data_subset),
-                       center = input$center,
-                       scale = input$scale_data
+                       # center = input$center,
+                       # scale = input$scale_data
+                       center = TRUE,
+                       scale = TRUE
                      )
                      incProgress(0.1)
 
@@ -492,12 +498,10 @@ observeEvent( c(input$plotpca,
                 input$the_pcs_to_plot_x,
                 input$the_pcs_to_plot_y),{
 
-       if (!(is.null(reactives$matrix) | is.null(reactives$metadata))){
-
-  #
+      #if (!(is.null(reactives$matrix) | is.null(reactives$metadata))){
+      if (!(is.null(reactives$matrix) | is.null(reactives$metadata)) & input$pcago > 0){
        pcs_df <- pca_objects$pcs_df
        pca_output <-  pca_objects$pca_output
-  #
   #     # filter the pca objects for values that should not be plotted
       display_samples <- input$display_samples
       if (!is.null(display_samples)) {
@@ -505,7 +509,6 @@ observeEvent( c(input$plotpca,
         pca_output$x <- pca_output$x[which(rownames(pca_output$x) %in% display_samples),]
         #pca_output$sdev <- pca_output$sdev[which(rownames(pca_output$sdev) %in% display_samples),]
       }
-  #     #
       var_expl_x <-
         round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", input$the_pcs_to_plot_x))] ^
                 2 / sum(pca_output$sdev ^ 2), 1)
@@ -690,6 +693,22 @@ observeEvent( c(input$plotpca,
     textInput(ns('metadata_file_url'),'Metadata file URL:', value=mfu, width=600)
   })
 
+
+  observeEvent(input$pcatabs,{
+
+    if (as.character(input$pcatabs[[1]]) == "Plots"){
+      if(input$pcago == 0){
+      showModal(modalDialog(
+        title = "PCA never runned",
+        "Please first click on the 'RUN PCA' button at the end of the 'Parameters' tab",
+        easyClose = TRUE,
+        footer = tagList(
+          modalButton(ns("Cancel")))
+      ))
+      }
+    }
+
+  })
 
   return(reactives)
 

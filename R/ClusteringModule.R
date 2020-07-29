@@ -182,11 +182,6 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
   reactives <- reactiveValues(obj =  data$table, metadata = metadata$table,variableFeatures = genefilter::rowVars(vst))
   reactives2 <- reactiveValues(selData = data$table)
 
-print("dataClst")
-print(head(data$table))
-print("metaclust")
-print(head(metadata$table))
-
   if (!is.null(data)){
 
   shiny::observeEvent(reactives2$selData,{
@@ -426,19 +421,10 @@ print(head(metadata$table))
         hclust(dist(t(data.in),method = input$distFun_col),method = input$hclustFun_col),
         k = input$c
       )
-      # print("colclust")
-      print("classcolclust")
-      print(class(p$dendCol))
-      #print(table(p$dendCol))
-
       p$elementId <- NULL
-
       p
     }
-
   })
-
-
 
   shiny::observeEvent(reactives2$selData,{
     output$heatout <- plotly::renderPlotly({
