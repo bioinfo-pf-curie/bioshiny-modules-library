@@ -64,8 +64,8 @@ ClusteringUICNV <- function(id){
             shiny::tabPanel("Heatmaply",
                             htmltools::tags$a(id = 'downloadDataCNV', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, shiny::icon("clone"), 'Download Heatmap as HTML'),
                             htmltools::tags$head(htmltools::tags$style(".mybutton{color:white;background-color:blue;} .skin-black .sidebar .mybutton{color: green;}") ),
-                            plotly::plotlyOutput(ns("heatoutCNV"),height=paste0(500,'px'))
-
+                            #plotly::plotlyOutput(ns("heatoutCNV"),height=paste0(500,'px'))
+                            plotly::plotlyOutput(ns("heatoutCNV"),height="100%",width = "100%")
             ),
             shiny::tabPanel("Data",
                             shiny::dataTableOutput(ns('tablesCNV'))
@@ -102,10 +102,12 @@ ClusteringUICNV <- function(id){
                                                              shiny::column(width=12,shiny::selectInput(ns('dendrogramCNV'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both')),
                                                              #htmltools::br(),htmltools::hr(),
                                                              htmltools::h4('Row dendrogram'),
-                                                             shiny::column(width=6,shiny::selectizeInput(ns("distFun_rowCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                             # shiny::column(width=6,shiny::selectizeInput(ns("distFun_rowCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                             shiny::column(width=6,shiny::selectizeInput(ns("distFun_rowCNV"), "Distance method", c(Euclidean="euclidean", "pearson"),selected = 'euclidean')),
                                                              shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_rowCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                              htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-                                                             shiny::column(width=6,shiny::selectizeInput(ns("distFun_colCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                             #shiny::column(width=6,shiny::selectizeInput(ns("distFun_colCNV"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                             shiny::column(width=6,shiny::selectizeInput(ns("distFun_colCNV"), "Distance method", c(Euclidean="euclidean","pearson"),selected = 'euclidean')),
                                                              shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_colCNV"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                              br(),
                                                              shiny::column(width=12,
@@ -122,8 +124,8 @@ ClusteringUICNV <- function(id){
                                                              shiny::sliderInput(ns('row_text_angleCNV'),'Row Text Angle',value = 0,min=0,max=180),
                                                              br(),br(),
                                                              shiny::sliderInput(ns('column_text_angleCNV'),'Column Text Angle',value = 45,min=0,max=180),
-                                                             shiny::sliderInput(ns("lCNV"), "Set Margin Width", min = 0, max = 200, value = 130),
-                                                             shiny::sliderInput(ns("bCNV"), "Set Margin Height", min = 0, max = 200, value = 40)
+                                                             shiny::sliderInput(ns("lCNV"), "Set Margin Width", min = 0, max = 200, value = 5),
+                                                             shiny::sliderInput(ns("bCNV"), "Set Margin Height", min = 0, max = 200, value = 5)
                                      )
                                    )# end of FluidPage
           ) # end of Box
@@ -346,13 +348,9 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
         }
       }
     }
-  #
-  #
-    if( length(input$annoVarCNV) > 0 ){
-      # print("reactives metadata")
-      # print(reactives$metadata)
-      samplesAnnot <- reactives$metadata[,input$annoVarCNV]
 
+    if( length(input$annoVarCNV) > 0 ){
+      samplesAnnot <- reactives$metadata[,input$annoVarCNV, drop = F]
     }
 
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
@@ -384,7 +382,11 @@ ClusteringServerCNV <- function(input, output, session, data = NULL, metadata = 
       ColLimits=c(input$colorRng_minCNV, input$colorRng_maxCNV)
     }
 
+    if(input$distFun_rowCNV != "pearson"){
     distfun_row = function(x) stats::dist(x, method = input$distFun_rowCNV)
+    } else {
+    distfun_row <- function(x) 1- get_dist(x, method = "pearson", stand = FALSE)
+    }
     distfun_col =  function(x) stats::dist(x, method = input$distFun_colCNV)
 
     hclustfun_row = function(x) stats::hclust(x, method = input$hclustFun_rowCNV)

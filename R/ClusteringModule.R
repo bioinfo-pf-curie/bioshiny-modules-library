@@ -41,30 +41,27 @@ ClusteringUI <- function(id){
 
 
           shiny::uiOutput(ns('annoVars')),
-
           htmltools::br(),htmltools::hr(),htmltools::h4('Row dendrogram'),
-          #shiny::column(width=6,shiny::selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
-          #shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_row"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
           shiny::column(width=12,shiny::sliderInput(ns("r"), "Number of Clusters", min = 1, max = 15, value = 2)),
           #column(width=4,numericInput("r", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
-
           htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-          #shiny::column(width=6,shiny::selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
-          #shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_col"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
           shiny::column(width=12,shiny::sliderInput(ns("c"), "Number of Clusters", min = 1, max = 15, value = 2)),
           #column(width=4,numericInput("c", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
-
 
           )
           ) # end of fluidPage
           ) # end of box and fluidRow
         ),
+        #shiny::mainPanel(
         shiny::mainPanel(width = 7,
           shiny::tabsetPanel(
             shiny::tabPanel("Heatmaply",
                             htmltools::tags$a(id = 'downloadData', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, shiny::icon("clone"), 'Download Heatmap as HTML'),
                             htmltools::tags$head(htmltools::tags$style(".mybutton{color:white;background-color:blue;} .skin-black .sidebar .mybutton{color: green;}") ),
-                            plotly::plotlyOutput(ns("heatout"),height=paste0(500,'px')),
+                            #plotly::plotlyOutput(ns("heatout"),height=paste0(500,'px')),
+                            #column(width = 12,plotly::plotlyOutput(ns("heatout"),height="100%",width = "700px")),
+                            fluidRow(
+                              column(width = 12,plotly::plotlyOutput(ns("heatout"),height="100%",width = "100%"))),
                             column(width = 12,
                                    br(),
                                    br(),
@@ -92,17 +89,18 @@ ClusteringUI <- function(id){
                                                                    shiny::column(width=12,shiny::selectInput(ns('dendrogram'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both')),
                                                                    #htmltools::br(),htmltools::hr(),
                                                                    htmltools::h4('Row dendrogram'),
-                                                                   shiny::column(width=6,shiny::selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                                   #shiny::column(width=6,shiny::selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                                   shiny::column(width=6,shiny::selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
                                                                    shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_row"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                                    htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-                                                                   shiny::column(width=6,shiny::selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                                   #shiny::column(width=6,shiny::selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                                   shiny::column(width=6,shiny::selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
                                                                    shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_col"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                                    br(),
                                                                    shiny::column(width=12,
                                                                                  shiny::selectizeInput(ns("seriation"), "Seriation", c(OLO="OLO",GW="GW",Mean="mean",None="none"),selected = 'OLO'),
                                                                                  shiny::sliderInput(ns('branches_lwd'),'Dendrogram Branch Width',value = 0.6,min=0,max=5,step = 0.1))
                                            ),
-
                                            shiny::conditionalPanel('input.showMargin==1',ns = ns,
                                                                    htmltools::hr(),
                                                                    htmltools::h4('Widget Layout'),
@@ -112,8 +110,8 @@ ClusteringUI <- function(id){
                                                                    shiny::sliderInput(ns('row_text_angle'),'Row Text Angle',value = 0,min=0,max=180),
                                                                    br(),
                                                                    shiny::sliderInput(ns('column_text_angle'),'Column Text Angle',value = 45,min=0,max=180),
-                                                                   shiny::sliderInput(ns("l"), "Set Margin Width", min = 0, max = 200, value = 130),
-                                                                   shiny::sliderInput(ns("b"), "Set Margin Height", min = 0, max = 200, value = 40)
+                                                                   shiny::sliderInput(ns("l"), "Set Margin Width", min = 0, max = 200, value = 5),
+                                                                   shiny::sliderInput(ns("b"), "Set Margin Height", min = 0, max = 200, value = 5)
                                             )
 
                                          )# end of FluidPage
@@ -122,10 +120,10 @@ ClusteringUI <- function(id){
                             ) # end of columnbox
             ),
             shiny::tabPanel("Data",
-                            shiny::dataTableOutput(ns('tables'))
+                            fluidRow(shiny::dataTableOutput(ns('tables')))
             )
           )
-        )
+        ) # end of box
  # )#  end of shinyUI(
 ) # end of sidebarlayout
 ) # end of tagList
@@ -324,7 +322,7 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
     if( length(input$annoVar) > 0 ){
 
-      samplesAnnot <- reactives$metadata[,input$annoVar]
+      samplesAnnot <- reactives$metadata[,input$annoVar, drop = F]
 
     }
 
@@ -359,14 +357,36 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
       ColLimits=c(input$colorRng_min, input$colorRng_max)
     }
 
+    #distfun_row = function(x) stats::dist(x, method = "euclidean")
+    if (length(input$distFun_row) != 0){
+    if(input$distFun_row != "pearson"){
     distfun_row = function(x) stats::dist(x, method = input$distFun_row)
-    distfun_col =  function(x) stats::dist(x, method = input$distFun_col)
+    } else {
+    distfun_row <- function(x) {
+      print(head(x))
+      return(1- factoextra::get_dist(x, method = "pearson", stand = FALSE))}
+    }
+    }
+    if (length(input$distFun_col) != 0){
+      print(input$distFun_col)
+      if(input$distFun_col != "pearson"){
+        distfun_col = function(x) stats::dist(x, method = input$distFun_col)
+      } else {
+        distfun_col <- function(x) {
+          print(head(x))
+          return(1- factoextra::get_dist(x, method = "pearson", stand = FALSE))}
+      }
+    }
+    # distfun_row =  function(x) stats::dist(x, method = input$distFun_row)
+    # distfun_col =  function(x) stats::dist(x, method = input$distFun_col)
 
     hclustfun_row = function(x) stats::hclust(x, method = input$hclustFun_row)
     hclustfun_col = function(x) stats::hclust(x, method = input$hclustFun_col)
 
     if(length(input$annoVar)>0){
 
+    # if(length(input$annoVar) == 1){
+    # Annot_name <- input$annoVar
     p <- heatmaply::heatmaply(data.in,
                               main = input$main,xlab = input$xlab,ylab = input$ylab,
                               row_text_angle = input$row_text_angle,
@@ -411,16 +431,42 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
         plotly::layout(margin = list(l = input$l, b = input$b))
 
 
-      p$dendRow <- cutree(
-        hclust(dist(data.in,method = input$distFun_row),method = input$hclustFun_row),
-        k = input$r
-      )
+
+        if (length(input$distFun_row) != 0){
+          if(input$distFun_row != "pearson"){
+            p$dendRow <- cutree(
+            hclust(dist(data.in,method = input$distFun_row),method = input$hclustFun_row),
+            k = input$r)
+          } else {
+            p$dendRow <- cutree(
+            hclust(1- factoextra::get_dist(data.in, method = "pearson", stand = FALSE),
+                   method = input$hclustFun_row),
+            k = input$r)
+          }
+        }
+      # p$dendRow <- cutree(
+      #   #hclust(dist(data.in,method = input$distFun_row),method = input$hclustFun_row),
+      #   k = input$r
+      #)
       # print("rowclust")
       # print(p$dendRow)
-      p$dendCol <- cutree(
-        hclust(dist(t(data.in),method = input$distFun_col),method = input$hclustFun_col),
-        k = input$c
-      )
+
+        if (length(input$distFun_col) != 0){
+          if(input$distFun_col != "pearson"){
+            p$dendCol <- cutree(
+            hclust(dist(data.in,method = input$distFun_col),method = input$hclustFun_col),
+            k = input$c)
+          } else {
+            p$dendCol <- cutree(
+            hclust(1- factoextra::get_dist(data.in, method = "pearson", stand = FALSE),
+                   method = input$hclustFun_col),
+            k = input$c)
+          }
+        }
+      #p$dendCol <- cutree(
+        #hclust(dist(t(data.in),method = input$distFun_col),method = input$hclustFun_col),
+       # k = input$c)
+
       p$elementId <- NULL
       p
     }
