@@ -297,27 +297,25 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
     }) # end of observer
 
 
-
-
-  interactiveHeatmap<- shiny::reactive({
+interactiveHeatmap<- shiny::reactive({
     data.in <- reactives2$selData
-    if(input$showSample){
-      if(!is.null(input$selRows)){
-        print("selrow not nut")
-        #set.seed(input$setSeed)
-        set.seed(500)
-        if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
-          print("morethan2selrow and selrows < datain")
-          # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
-          if(length(input$selCols)<=1) {
-            print("input$selCols)<=1")
-            data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),]}
-          if(length(input$selCols)>1) {
-            print("input$selCols)>1")
-            data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),input$selCols]}
-        }
-      }
-    }
+    # if(input$showSample){
+      # if(!is.null(input$selRows)){
+      #   print("selrow not nut")
+      #   #set.seed(input$setSeed)
+      #   set.seed(500)
+      #   if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
+      #     print("morethan2selrow and selrows < datain")
+      #     # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
+      #     if(length(input$selCols)<=1) {
+      #       print("input$selCols)<=1")
+      #       data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),]}
+      #     if(length(input$selCols)>1) {
+      #       print("input$selCols)>1")
+      #       data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),input$selCols]}
+      #   }
+      # }
+    #}
 
 
     if( length(input$annoVar) > 0 ){
@@ -325,11 +323,7 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
       samplesAnnot <- reactives$metadata[,input$annoVar, drop = F]
 
     }
-
-
-
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
-
     #if(input$transpose) data.in=t(data.in)
     if(input$transform_fun!='.'){
       if(input$transform_fun=='is.na10'){
@@ -348,9 +342,6 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
       if(input$transform_fun=='percentize') data.in=heatmaply::percentize(data.in)
     }
 
-
-    #if(!is.null(input$tables_true_search_columns))
-    #  data.in=data.in[activeRows(input$tables_true_search_columns,data.in),]
     if(input$colRngAuto){
       ColLimits=NULL
     }else{

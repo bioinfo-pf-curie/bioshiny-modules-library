@@ -13,7 +13,7 @@
 #'
 #'
 #' @importFrom htmltools tagList tags singleton
-#' @importFrom shinydashboard infoBoxOutput
+#' @importFrom shinydashboard infoBoxOutput valueBoxOutput renderValueBox valueBox infoBox
 #' @importFrom shiny NS actionButton icon uiOutput
 #' @importFrom shinyWidgets updatePickerInput pickerInput
 
@@ -22,27 +22,32 @@ MergedDeaModUI <- function(id)  {
   ns <- NS(id)
     fluidPage(
       tags$head(
-        tags$style(type='text/css', ".span161 { width: 850px; }"),
-        tags$style("#test .modal-dialog {height: 1000px !important;}")
+        tags$style(type='text/css', ".span161 { width: 850px; }")#,
       ),
+      tags$head(tags$style(type = "#boxPopUp1 .modal-body{ min-height:550px}")),
       br(),
       fluidPage(
       fluidRow(
       #div(class = "span161",
           tabsetPanel(type = "pills",id = "DEGtabs",
       tabPanel("RUN DEA",
+      #fluidPage(
       br(),
       #fluidRow(
       box(title = "Creates DEG model",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "primary",width= 12,
           #fluidRow(
-          column(width = 10,uiOutput(ns("var")),
-                 uiOutput(ns("covar"))),
-          column(width = 2,
-                 br(),
-                 br(),
-                 br(),
-                 actionButton(ns("help1"),"",icon = icon("info")))
+          # column(width = 10,uiOutput(ns("var")),
+          #        uiOutput(ns("covar"))),
+          # column(width = 2,
+          #        br(),
+          #        br(),
+          #        br(),
+          #        actionButton(ns("help1"),"",icon = icon("info"))
+          #        )
+          #fluidRow(
+          uiOutput(ns("vars_selUI"))
+          #)
       ), # end of box
       #), # end of fluidRow
       #fluidRow(
@@ -136,15 +141,24 @@ tabPanel("Figures",
         column(width = 6,selectInput(ns("AdjMeth"),"Select an adjustment method", choices = c("BH","none","BY","holm"), selected = "BH")),
         column(width = 6,numericInput(ns("PvalsT"),"adjusted P values threshold", min = 0, max = 1 , value = 0.05, step = 0.01))),
       fluidRow(
-        column(width = 6,numericInput(ns("FCT"),"LogFC threshold", min = 0, max = 10 , value = 1, step = 0.05)),
-        column(width = 6, infoBoxOutput(ns("featuress"),tags$style("#featuress {width:230px;}")))),
-      ),
+        column(width = 12,numericInput(ns("FCT"),"LogFC threshold", min = 0, max = 10 , value = 1, step = 0.05))#,
+        #column(width = 6, infoBoxOutput(ns("featuress"),tags$style("#featuress {width:230px;}")))
+        ),
+      fluidRow(uiOutput(ns('features_value_box')))
+      # fluidRow(column(width = 6,
+      #                 #infoBoxOutput(ns("down_numbers")),
+      #                 valueBoxOutput(ns('down_numbers'))),
+      #                 column(width = 6,
+      #                 infoBoxOutput(ns("upp_numbers")))
+      #          )# end of row
+      ), # end of box
       #fluidRow(
         #column(width = 12 ,
           box(title = span(icon("chart-bar"),"DEA figures"),collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "success",width = 12,
-          fluidRow(column(width =6,girafeOutput(ns("Pvals_distrib"))),
-          column(width =6,plotOutput(ns("scatter")))),
+          # fluidRow(column(width =6,girafeOutput(ns("Pvals_distrib"))),
+          # column(width =6,plotOutput(ns("scatter")))),
+          fluidRow(column(width =12,girafeOutput(ns("Pvals_distrib")))),
           br(),
           br(),
           fluidRow(column(width = 12,
@@ -237,6 +251,7 @@ tabPanel("Tables",
 #' @importFrom tidyr gather
 #' @importFrom shinyWidgets updatePickerInput pickerInput pickerOptions
 #' @import dplyr
+#' @importFrom tictoc tic toc
 
 MergedDeaModServer <- function(input, output, session, matrix = NULL,sampleplan = NULL, var = NULL) {
 
@@ -358,13 +373,14 @@ observeEvent(input$remove1,{
       }
     })
 
-    output$var <- renderUI({
-
-      tagList(
-        selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
-                    multiple = FALSE, selected = var[1])
-      )
-    })
+    # output$var <- renderUI({
+    #
+    #   tagList(
+    #     column(width = 8,
+    #     selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
+    #                 multiple = FALSE, selected = var[1]))
+    #   )
+    # })
 
 
     observeEvent(input$help1,{
@@ -386,13 +402,30 @@ observeEvent(input$remove1,{
 
     })
 
-    output$covar <- renderUI({
-      tagList(
-        selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
-                    multiple = FALSE, selectize = TRUE, selected = "")
-      )
+    output$vars_selUI <- renderUI({
 
+      tagList(
+        fluidRow(
+          column(width = 10,
+                 selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
+                             multiple = FALSE, selected = var[1])),
+          column(width = 10,
+                 selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
+                             multiple = FALSE, selectize = TRUE, selected = "")),
+          column(width = 2,
+                 actionButton(ns("help1"),"",icon = icon("info")))
+        )
+      )
     })
+
+    # output$covar <- renderUI({
+    #   tagList(
+    #     column(width = 8,
+    #     selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
+    #                 multiple = FALSE, selectize = TRUE, selected = ""))
+    #   )
+    #
+    # })
 
     output$Group1 <- renderUI({
       tagList(
@@ -417,19 +450,45 @@ observeEvent(input$remove1,{
       groups$Group1 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group1sel),])
       } else if (input$var == "Create your own groups"){
 
+      #div(class = "#boxPopUp1",
       showModal(
       fluidPage(
       modalDialog(
       title = "Create two groups for differential analysis",
       fluidRow(
       column(width = 6,
-      checkboxGroupInput(ns("createGroup1"), "select samples to add in group 2",
-                         choices = rownames(sampleplanmodel$table),
-                         selected = NULL)),
+      # checkboxGroupInput(ns("createGroup1"), "select samples to add in group 2",
+      #                    choices = rownames(sampleplanmodel$table),
+      #                    selected = NULL)),
+      pickerInput(ns("createGroup1"), "select samples to add in group 1",
+                                      choices = rownames(sampleplanmodel$table),
+                                      selected = NULL,
+                  multiple = TRUE,
+                  choicesOpt = NULL,
+                  inline = FALSE,
+                  options = pickerOptions(
+                    actionsBox = TRUE,
+                    title = "Select samples to add",
+                    liveSearch = TRUE,
+                    liveSearchStyle = "contains"
+                  ))
+      ),
       column(width = 6,
-             checkboxGroupInput(ns("createGroup2"), "select samples to add in group 2",
-                                                  choices = rownames(sampleplanmodel$table),
-                                                  selected = NULL)
+             # checkboxGroupInput(ns("createGroup2"), "select samples to add in group 2",
+             #                                      choices = rownames(sampleplanmodel$table),
+             #                                      selected = NULL)
+             pickerInput(ns("createGroup2"), "select samples to add in group 2",
+                         choices = rownames(sampleplanmodel$table),
+                         selected = NULL,
+                         multiple = TRUE,
+                         choicesOpt = NULL,
+                         inline = FALSE,
+                         options = pickerOptions(
+                           actionsBox = TRUE,
+                           title = "Select samples to add",
+                           liveSearch = TRUE,
+                           liveSearchStyle = "contains"
+                         ))
       )),
       easyClose = TRUE,
       footer = tagList(
@@ -439,6 +498,7 @@ observeEvent(input$remove1,{
       ) # end of fluidRow
       )
       )
+      #) # end of div
       }
       }
     })
@@ -446,10 +506,6 @@ observeEvent(input$remove1,{
     observeEvent(input$ok,{
       groups$Group1 <- rownames(sampleplanmodel$table)[which(rownames(sampleplanmodel$table) %in% input$createGroup1)]
       groups$Group2 <- rownames(sampleplanmodel$table)[which(rownames(sampleplanmodel$table) %in% input$createGroup2)]
-      print("groupsĜroup1 created")
-      print(groups$Group1)
-      print("groupsĜroup2 created")
-      print(groups$Group2)
       removeModal()
     })
 
@@ -557,12 +613,9 @@ observeEvent(input$remove1,{
 
   observeEvent(c(matrix$table,
                  reactives$contrast),priority = 10,{
-                   #observe({
 
-                   #if (!is.null(matrix$table) && !is.null(reactives$design)){
                    if (!is.null(matrix$table) && !is.null(reactives$design)){
-
-                     #print(head(matrix$table))
+                   tictoc::tic("Voom transormation and fitting linear model..")
                      counts <- matrix$table[,colnames(matrix$table)%in%rownames(reactives$design)]
                      #if(input$DEAmeth == "limma"){
 
@@ -570,28 +623,23 @@ observeEvent(input$remove1,{
                          counts[,col] <- as.numeric(counts[,col])
                        }
                        y <- DGEList(counts=counts, genes=rownames(counts))
-
                        #Voom transforms count data to log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observation-level weights
-                       results$v <- voom(y, reactives$design, plot=FALSE, save.plot = TRUE)
-                       fit <- lmFit(results$v$E, reactives$design)
+                       # results$v <- voom(y, reactives$design, plot=FALSE, save.plot = TRUE)
+                       # fit <- lmFit(results$v$E, reactives$design)
+                       results$v <- voom(y, reactives$design, plot=FALSE, save.plot = FALSE)
+                       fit <- lmFit(results$v, reactives$design)
                        fit2 <- contrasts.fit(fit,reactives$contrast)
                        #Given a microarray linear model fit, compute moderated t-statistics, moderated F-statistic, and log-odds of differential expression by empirical Bayes moderation of the standard errors towards a common value.
                        fit2 <- eBayes(fit2)
                        res <- topTable(fit2, number=nrow(counts), adjust.method=input$AdjMeth)
                        res <- res[order(res$adj.P.Val),]
-                       # print("initial res ")
-                       # print(res)
                        res$genes <- rownames(res)
-                       #res$label <- rownames(res)
-                       # print("genes")
-                       # print(rownames(head(res)))
                        results$res <- res
-
-
                      # } else if( input$DEAmeth == "DEseq2") {
                      #
                      # }
                    } # end of if NULL
+                   toc(log = TRUE)
                  }) # end of observer
 
   createLink <- function(val) {
@@ -646,29 +694,23 @@ updatePickerInput("GeneVolcano", session = session, choices = rownames(matrix$ta
 Volcano <- reactiveValues(plot = NULL)
 observe({
   req(results$res)
-  # print("labels")
-  # results$res$genes <- rownames(results$res)
-  #ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value), label = adj.P.Val)) +
+  tic("Ploting Volcano")
   ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(adj.P.Val))) +
-  #ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value))) +
     ggtitle(colnames(reactives$contrast)) +
     scale_fill_gradient(low = "lightgray", high = "navy") +
     scale_color_gradient(low = "lightgray", high = "navy") +
-    #scale_y_continuous(trans = revlog_trans(), expand = c(0.005, 0.005)) +
     expand_limits(y = c(min(-log10(results$res$P.Value)), 1)) +
-    stat_density_2d(aes(fill = ..level..), geom = "polygon",
-                    show.legend = FALSE) +
+#### stat_density rend maintenant l'erreur In max(x, na.rm = na.rm) : aucun argument pour max ; -Inf est renvoyé WHY ????
+    # stat_density_2d(aes(fill = ..level..), geom = "polygon",
+    #                 show.legend = FALSE) +
     geom_point(data = results$res,
                color = "grey", alpha = 0.5) +
-    #geom_point(data = subset(results$res, logFC > input$FCT  & adj.P.Val > input$PvalsT),
     geom_point(data = subset(results$res, logFC > input$FCT),
                color = "red", alpha = 0.5) +
     geom_point(data = subset(results$res, logFC < -input$FCT),
                color = "blue", alpha = 0.5) +
     geom_point(data = subset(results$res, adj.P.Val < input$PvalsT),
-    #geom_point(data = subset(results$res, label < input$PvalsT),
                color = "green", alpha = 0.5) +
-    #geom_text_repel() +
     geom_vline(xintercept = min(-log10(results$res$P.Value))) +
     geom_hline(yintercept = min(-log10(results$res$P.Value))) +
     geom_hline(yintercept = -log10(input$PvalsT), linetype = "dashed") +
@@ -679,11 +721,13 @@ observe({
     ylab("-log10(P-Value)")
 
   Volcano$plot <- ggplot
+  toc(log = TRUE)
 })
 
 output$Volcano <- renderPlot({
 
   req(Volcano$plot)
+  tic("Rendering Volcano...")
     ggplot <- Volcano$plot +
       geom_point(data = subset(results$res,genes %in% input$GeneVolcano),
                  color = "purple", alpha = 0.6) +
@@ -701,6 +745,7 @@ output$Volcano <- renderPlot({
   return(ggplot)
     # ggplot_labeled <- gglabeller(ggplot, aes(label = rownames(results$res)))
     # return(ggplot_labeled)
+    toc(log = TRUE)
 
   #girafe(code = {print(ggplot)})
 })
@@ -750,20 +795,20 @@ output$Volcano <- renderPlot({
 #   girafe(code = {print(ggplot)})
 # })
 
-output$scatter <- renderPlot({
-
-  dfplot <- data.frame(Mean = results$v$voom.xy$x, sd = results$v$voom.xy$y)
-  dfline <- data.frame(x = results$v$voom.line$x,y = results$v$voom.line$y)
-  ggplot <- ggplot(dfplot, aes(x= Mean,y = sd, label = rownames(dfplot))) +
-    geom_point(data = dfplot,
-               color = "blue", alpha = 0.05) +
-    labs(title = "Scatter plot on voom normalized value",x = results$v$voom.xy$xlab,
-         y = results$v$voom.xy$ylab) +
-    geom_line(data = dfline,aes(x=x,y=y))
-
-  return(ggplot)
-
-})
+# output$scatter <- renderPlot({
+#
+#   dfplot <- data.frame(Mean = results$v$voom.xy$x, sd = results$v$voom.xy$y)
+#   dfline <- data.frame(x = results$v$voom.line$x,y = results$v$voom.line$y)
+#   ggplot <- ggplot(dfplot, aes(x= Mean,y = sd, label = rownames(dfplot))) +
+#     geom_point(data = dfplot,
+#                color = "blue", alpha = 0.05) +
+#     labs(title = "Scatter plot on voom normalized value",x = results$v$voom.xy$xlab,
+#          y = results$v$voom.xy$ylab) +
+#     geom_line(data = dfline,aes(x=x,y=y))
+#
+#   return(ggplot)
+#
+# })
 
 
 observeEvent(input$GeneVolcano,{
@@ -794,7 +839,7 @@ observeEvent(input$GeneVolcano,{
     boxplotdata[,input$var] <- as.character(boxplotdata[,input$var])
     results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
       geom_boxplot() +
-      theme(legend.position = "none") +
+      #theme(legend.position = "none") +
       geom_point(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
                                                seed = 1234),
                  pch=21,
@@ -821,8 +866,11 @@ observeEvent(input$GeneVolcano,{
   )
   })
 
-  output$results_table <- DT::renderDataTable({datatable(
-    results$restable,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
+  output$results_table <- DT::renderDataTable({
+    a <- results$restable
+    a$genes <- NULL
+    datatable(
+    a,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
 
 
   output$resdl <- downloadHandler(
@@ -834,8 +882,11 @@ observeEvent(input$GeneVolcano,{
     }
   )
 
-  output$up_table <- DT::renderDataTable({datatable(
-    results$up,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
+  output$up_table <- DT::renderDataTable({
+    a <- results$up
+    a$genes <- NULL
+    datatable(
+    a,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
 
   output$updl <- downloadHandler(
     filename = function() {
@@ -847,8 +898,11 @@ observeEvent(input$GeneVolcano,{
   )
 
 
-  output$down_table <- DT::renderDataTable({datatable(
-    results$down,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
+  output$down_table <- DT::renderDataTable({
+    a <- results$down
+    a$genes <- NULL
+    datatable(
+    a,escape = FALSE,options = list(scrollX=TRUE, scrollCollapse=TRUE))})
 
   output$downdl <- downloadHandler(
     filename = function() {
@@ -867,6 +921,46 @@ observeEvent(input$GeneVolcano,{
         paste(results$nsignfc,"Among the ",nrow(results$res),"features pass the filters"),
         icon = icon("dna")
       )
+    })
+
+  output$upp_numbers <-
+    #renderInfoBox({
+    renderValueBox({
+      req(results$up)
+     # column(width = 12,
+      #infoBox(
+      valueBox(
+        as.character(nrow(results$up)),
+        "Upp regulated features",
+        icon = icon("dna"),color = "red"
+        # "Number of features passing FC and Pval Filters",
+        # paste(nrow(results$up),"Upp uppregulated features"),
+      )
+     # )
+    })
+
+output$features_value_box <- renderUI({
+    fluidRow(
+      column(width = 6,
+           #infoBoxOutput(ns("down_numbers")),
+           valueBoxOutput(ns('down_numbers'),width =  12)),
+    column(width = 6,
+           valueBoxOutput(ns("upp_numbers"),width =  12)
+    ))
+  })
+
+  output$down_numbers <-
+    #renderInfoBox({
+    renderValueBox({
+
+      req(results$down)
+      #column(width = 12,
+      valueBox(
+        as.character(nrow(results$down)),
+        "Down regulated features",
+        icon = icon("dna"),color = "blue"
+      )
+      #)
     })
 
   #observeEvent(c(results$res,results$nsignfc),{
