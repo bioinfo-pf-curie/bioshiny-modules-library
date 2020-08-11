@@ -17,8 +17,8 @@
 ClusteringUI <- function(id){
 
   ns <- NS(id)
-  #ui <- shiny::shinyUI(
-    shiny::fluidPage(
+  #ui <- shinyUI(
+    fluidPage(
       tagList(
       tags$style(type='text/css', ".selectize-input { font-size: 12px; line-height: 13px;width: 105px}
                  .selectize-dropdown { font-size: 12px; line-height: 13px; }
@@ -26,38 +26,37 @@ ClusteringUI <- function(id){
                  .box-body {
           padding-bottom: 0px;
       }"),
-      shiny::sidebarLayout(
-        shiny::sidebarPanel(width = 5,
+      sidebarLayout(
+        sidebarPanel(width = 12,
           fluidRow(
           box(title = 'Clustering data',collapsible = TRUE,collapsed = FALSE,width = NULL, status = "primary",solidHeader = TRUE,
           #htmltools::h4('Data'),
-          #shiny::uiOutput(ns('data')),
+          #uiOutput(ns('data')),
           fluidPage(
-          shiny::checkboxInput(ns('showSample'),'Subset Data'),
-          shiny::conditionalPanel('input.showSample == 1',ns = ns,hr(),shiny::uiOutput(ns('sample'))),
-          htmltools::hr(),htmltools::h4('Data Preprocessing'),
-          #shiny::column(width=4,shiny::selectizeInput(ns('transpose'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
-          shiny::column(width=4,shiny::selectizeInput(ns("transform_fun"), "Transform", c(Identity=".",Sqrt='sqrt',log='log',Scale='scale',Normalize='normalize',Percentize='percentize',"Missing values"='is.na10', Correlation='cor'),selected = '.')),
-
-
-          shiny::uiOutput(ns('annoVars')),
-          htmltools::br(),htmltools::hr(),htmltools::h4('Row dendrogram'),
-          shiny::column(width=12,shiny::sliderInput(ns("r"), "Number of Clusters", min = 1, max = 15, value = 2)),
+          #checkboxInput(ns('showSample'),'Subset Data'),
+          #conditionalPanel('input.showSample == 1',ns = ns,hr(),uiOutput(ns('sample'))),
+          #uiOutput(ns('sample')),
+          #htmltools::hr(),htmltools::h4('Data Preprocessing'),
+          #column(width=4,selectizeInput(ns('transpose'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
+          #column(width=4,selectizeInput(ns("transform_fun"), "Transform", c(Identity=".",Sqrt='sqrt',log='log',Scale='scale',Normalize='normalize',Percentize='percentize',"Missing values"='is.na10', Correlation='cor'),selected = '.')),
+          uiOutput(ns('annoVars')),
+          #htmltools::br(),htmltools::hr(),htmltools::h4('Row dendrogram'),
+          column(width=12,sliderInput(ns("r"), "Number of row Clusters", min = 1, max = 15, value = 2)),
           #column(width=4,numericInput("r", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
-          htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-          shiny::column(width=12,shiny::sliderInput(ns("c"), "Number of Clusters", min = 1, max = 15, value = 2)),
+          #htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
+          column(width=12,sliderInput(ns("c"), "Number of column Clusters", min = 1, max = 15, value = 2)),
           #column(width=4,numericInput("c", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
 
           )
           ) # end of fluidPage
           ) # end of box and fluidRow
         ),
-        #shiny::mainPanel(
-        shiny::mainPanel(width = 7,
-          shiny::tabsetPanel(
-            shiny::tabPanel("Heatmaply",
-                            htmltools::tags$a(id = 'downloadData', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, shiny::icon("clone"), 'Download Heatmap as HTML'),
-                            htmltools::tags$head(htmltools::tags$style(".mybutton{color:white;background-color:blue;} .skin-black .sidebar .mybutton{color: green;}") ),
+        #mainPanel(
+        mainPanel(width = 12,
+          tabsetPanel(
+            tabPanel("Heatmaply",
+                            #htmltools::tags$a(id = 'downloadData', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, icon("clone"), 'Download Heatmap as HTML'),
+                            #htmltools::tags$head(htmltools::tags$style(".mybutton{color:white;background-color:blue;} .skin-black .sidebar .mybutton{color: green;}") ),
                             #plotly::plotlyOutput(ns("heatout"),height=paste0(500,'px')),
                             #column(width = 12,plotly::plotlyOutput(ns("heatout"),height="100%",width = "700px")),
                             fluidRow(
@@ -71,47 +70,47 @@ ClusteringUI <- function(id){
                                          fluidPage(
                                            #htmltools::br(),htmltools::hr(),
                                            #htmltools::h4('Additional Parameters'),
-                                           shiny::column(3,shiny::checkboxInput(ns('showColor'),'Color')),
-                                           shiny::column(3,shiny::checkboxInput(ns('showMargin'),'Layout')),
-                                           shiny::column(3,shiny::checkboxInput(ns('showDendo'),'Dendrogram')),
+                                           column(3,checkboxInput(ns('showColor'),'Color')),
+                                           column(3,checkboxInput(ns('showMargin'),'Layout')),
+                                           column(3,checkboxInput(ns('showDendo'),'Dendrogram')),
                                            htmltools::hr(),
-                                           shiny::conditionalPanel('input.showColor==1',ns = ns,
+                                           conditionalPanel('input.showColor==1',ns = ns,
                                                                    htmltools::hr(),
                                                                    htmltools::h4('Color Manipulation'),
-                                                                   shiny::uiOutput(ns('colUI')),
-                                                                   shiny::sliderInput(ns("ncol"), "Set Number of Colors", min = 1, max = 256, value = 256),
-                                                                   shiny::checkboxInput(ns('colRngAuto'),'Auto Color Range',value = TRUE),
-                                                                   shiny::conditionalPanel('!input.colRngAuto',ns=ns,shiny::uiOutput(ns('colRng')))
+                                                                   uiOutput(ns('colUI')),
+                                                                   sliderInput(ns("ncol"), "Set Number of Colors", min = 1, max = 256, value = 256),
+                                                                   checkboxInput(ns('colRngAuto'),'Auto Color Range',value = TRUE),
+                                                                   conditionalPanel('!input.colRngAuto',ns=ns,uiOutput(ns('colRng')))
                                            ),
-                                           shiny::conditionalPanel('input.showDendo==1',ns = ns,
+                                           conditionalPanel('input.showDendo==1',ns = ns,
                                                                    htmltools::hr(),
                                                                    htmltools::h4('Dendrogram Manipulation'),
-                                                                   shiny::column(width=12,shiny::selectInput(ns('dendrogram'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both')),
+                                                                   column(width=12,selectInput(ns('dendrogram'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both')),
                                                                    #htmltools::br(),htmltools::hr(),
                                                                    htmltools::h4('Row dendrogram'),
-                                                                   #shiny::column(width=6,shiny::selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
-                                                                   shiny::column(width=6,shiny::selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
-                                                                   shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_row"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
+                                                                   #column(width=6,selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                                   column(width=6,selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
+                                                                   column(width=6,selectizeInput(ns("hclustFun_row"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                                    htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-                                                                   #shiny::column(width=6,shiny::selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
-                                                                   shiny::column(width=6,shiny::selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
-                                                                   shiny::column(width=6,shiny::selectizeInput(ns("hclustFun_col"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
+                                                                   #column(width=6,selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
+                                                                   column(width=6,selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
+                                                                   column(width=6,selectizeInput(ns("hclustFun_col"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                                    br(),
-                                                                   shiny::column(width=12,
-                                                                                 shiny::selectizeInput(ns("seriation"), "Seriation", c(OLO="OLO",GW="GW",Mean="mean",None="none"),selected = 'OLO'),
-                                                                                 shiny::sliderInput(ns('branches_lwd'),'Dendrogram Branch Width',value = 0.6,min=0,max=5,step = 0.1))
+                                                                   column(width=12,
+                                                                                 selectizeInput(ns("seriation"), "Seriation", c(OLO="OLO",GW="GW",Mean="mean",None="none"),selected = 'OLO'),
+                                                                                 sliderInput(ns('branches_lwd'),'Dendrogram Branch Width',value = 0.6,min=0,max=5,step = 0.1))
                                            ),
-                                           shiny::conditionalPanel('input.showMargin==1',ns = ns,
+                                           conditionalPanel('input.showMargin==1',ns = ns,
                                                                    htmltools::hr(),
                                                                    htmltools::h4('Widget Layout'),
-                                                                   shiny::column(4,shiny::textInput(ns('main'),'Title','')),
-                                                                   shiny::column(4,shiny::textInput(ns('xlab'),'X Title','')),
-                                                                   shiny::column(4,shiny::textInput(ns('ylab'),'Y Title','')),
-                                                                   shiny::sliderInput(ns('row_text_angle'),'Row Text Angle',value = 0,min=0,max=180),
+                                                                   column(4,textInput(ns('main'),'Title','')),
+                                                                   column(4,textInput(ns('xlab'),'X Title','')),
+                                                                   column(4,textInput(ns('ylab'),'Y Title','')),
+                                                                   sliderInput(ns('row_text_angle'),'Row Text Angle',value = 0,min=0,max=180),
                                                                    br(),
-                                                                   shiny::sliderInput(ns('column_text_angle'),'Column Text Angle',value = 45,min=0,max=180),
-                                                                   shiny::sliderInput(ns("l"), "Set Margin Width", min = 0, max = 200, value = 5),
-                                                                   shiny::sliderInput(ns("b"), "Set Margin Height", min = 0, max = 200, value = 5)
+                                                                   sliderInput(ns('column_text_angle'),'Column Text Angle',value = 45,min=0,max=180),
+                                                                   sliderInput(ns("l"), "Set Margin Width", min = 0, max = 200, value = 5),
+                                                                   sliderInput(ns("b"), "Set Margin Height", min = 0, max = 200, value = 5)
                                             )
 
                                          )# end of FluidPage
@@ -119,8 +118,8 @@ ClusteringUI <- function(id){
                                    ) # end of fluidRow
                             ) # end of columnbox
             ),
-            shiny::tabPanel("Data",
-                            fluidRow(shiny::dataTableOutput(ns('tables')))
+            tabPanel("Data",
+                            fluidRow(dataTableOutput(ns('tables')))
             )
           )
         ) # end of box
@@ -177,49 +176,101 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
   ns <- session$ns
 
-  reactives <- reactiveValues(obj =  data$table, metadata = metadata$table,variableFeatures = genefilter::rowVars(vst))
+  reactives <- reactiveValues(obj =  data$table, metadata = metadata$table)
+  #,variableFeatures = genefilter::rowVars(vst$vars))
   reactives2 <- reactiveValues(selData = data$table)
 
   if (!is.null(data)){
 
-  shiny::observeEvent(reactives2$selData,{
-    output$annoVars<-shiny::renderUI({
-      data.in=reactives2$selData
-      NM=NULL
-
-      if(any(sapply(data.in,class)=='factor')){
-        NM=names(data.in)[which(sapply(data.in,class)=='factor')]
-      }
-      shiny::column(width=4,
-                    #shiny::selectizeInput('annoVar','Annotation',choices = names(data.in),selected=NM,multiple=TRUE,options = list(placeholder = 'select columns',plugins = list("remove_button")))
-                    shiny::selectizeInput(ns('annoVar'),'Annotation',choices = colnames(reactives$metadata),selected=NM,multiple=TRUE,options = list(placeholder = 'select columns',plugins = list("remove_button")))
+ # observeEvent(reactives2$selData,{
+    output$annoVars<-renderUI({
+      # data.in=reactives2$selData
+      # NM=NULL
+      #
+      # if(any(sapply(data.in,class)=='factor')){
+      #   NM=names(data.in)[which(sapply(data.in,class)=='factor')]
+      # }
+      column(width=12,
+                    #selectizeInput('annoVar','Annotation',choices = names(data.in),selected=NM,multiple=TRUE,options = list(placeholder = 'select columns',plugins = list("remove_button")))
+                    #selectizeInput(ns('annoVar'),'Annotation',choices = colnames(reactives$metadata),selected=NM,multiple=TRUE,options = list(placeholder = 'select columns',plugins = list("remove_button")))
+                    pickerInput(ns('annoVar'),'Annotation',
+                                choices = colnames(reactives$metadata),
+                                # selected=NM,
+                                #choices = NULL,
+                                selected=NULL,
+                                multiple=TRUE,
+                                options = pickerOptions(
+                                         actionsBox = TRUE,
+                                         title = "Select variables for annotation",
+                                         liveSearch = TRUE,
+                                         liveSearchStyle = "contains",
+                                ))
                     )
     })
 
-
-  }) # enf of observeEvent
+#observe({
+  # data.in=reactives2$selData
+  # NM=NULL
+  #
+  # if(any(sapply(data.in,class)=='factor')){
+  #   NM=names(data.in)[which(sapply(data.in,class)=='factor')]
+  # }
+  # updatePickerInput('annoVar','Annotation',choices = colnames(reactives$metadata),
+  #                   #selected=NM,
+  #                   selected = NULL,
+  #                   session = session)
+#}) # enf of observeEvent
     #Sampling UI ----
 
-    subdata <- reactiveValues(rows = nrow(data$table), cols = names(data$table))
+    subdata <- reactiveValues(rows = nrow(data$table),
+                              #cols = names(data$table)
+                              cols = colnames(reactives2$selData)
+                              )
 
-
-    output$sample<-shiny::renderUI({
-      list(
-        #shiny::column(4,shiny::textInput(inputId = ns('setSeed'),label = 'Seed',value = sample(1:10000,1))),
-        shiny::column(4,shiny::numericInput(inputId = ns('selRows'),label = 'Number of Rows',min=1,max=pmin(500,subdata$rows),value = pmin(500,subdata$rows))),
-        shiny::column(4,shiny::selectizeInput(ns('selCols'),'Columns Subset',choices = subdata$cols,multiple=TRUE))
-      )
-    })
+    # observe({
+    # output$sample<-renderUI({
+    #   #req(reactives$obj)
+    #   list(
+    #     #column(4,textInput(inputId = ns('setSeed'),label = 'Seed',value = sample(1:10000,1))),
+    #     column(6,numericInput(inputId = ns('selRows'),label = 'Number of Rows',
+    #                                         min=1,
+    #                                         # max=pmin(500,subdata$rows),
+    #                                         # value = pmin(500,subdata$rows))
+    #                                         max=pmin(500,nrow(data$table)),
+    #                                         #max=pmin(500,nrow(reactives2$selData)),
+    #                                         #value = pmin(500,nrow(reactives2$selData)))
+    #                                         value = pmin(500,nrow(data$table)))
+    #
+    #                   ),
+    #     #column(6,selectizeInput(ns('selCols'),'Columns Subset',choices = subdata$cols,multiple=TRUE))
+    #     column(6,pickerInput(ns('selCols'),'Columns Subset',
+    #                                 #choices = subdata$cols,
+    #                                 #choices = colnames(reactives2$selData),
+    #                                 choices = colnames(data$table),
+    #                                 selected = NULL,
+    #                                 multiple=TRUE,
+    #                                 choicesOpt = NULL,
+    #                                 inline = FALSE,
+    #                                 #width =12,
+    #                                 options = pickerOptions(
+    #                                   actionsBox = FALSE,
+    #                                   title = "Select variables for annotation",
+    #                                   liveSearch = TRUE,
+    #                                   liveSearchStyle = "contains",
+    #                                 )))
+    #   )
+    # })
   #}) # Intitial end of observeEvent
+  #})
 
 
 
-  output$colUI<-shiny::renderUI({
+  output$colUI<-renderUI({
     colSel='Vidiris'
-    if(input$transform_fun=='cor') colSel='RdBu'
-    if(input$transform_fun=='is.na10') colSel='grey.colors'
+    #if(input$transform_fun=='cor') colSel='RdBu'
+    #if(input$transform_fun=='is.na10') colSel='grey.colors'
 
-    shiny::selectizeInput(inputId =ns("pal"), label ="Select Color Palette",
+    selectizeInput(inputId =ns("pal"), label ="Select Color Palette",
                           choices = c('Vidiris (Sequential)'="viridis",
                                       'Magma (Sequential)'="magma",
                                       'Plasma (Sequential)'="plasma",
@@ -241,64 +292,74 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
                           selected=colSel)
   })
 
-  shiny::observeEvent({reactives2$selData},{
-    output$colRng=shiny::renderUI({
+  observeEvent({reactives2$selData},{
+    output$colRng=renderUI({
 
       rng=range(reactives2$selData,na.rm = TRUE)
 
       n_data = nrow(reactives2$selData)
 
-      min_min_range = ifelse(input$transform_fun=='cor',-1,-Inf)
-      min_max_range = ifelse(input$transform_fun=='cor',1,rng[1])
-      min_value = ifelse(input$transform_fun=='cor',-1,rng[1])
-
-      max_min_range = ifelse(input$transform_fun=='cor',-1,rng[2])
-      max_max_range = ifelse(input$transform_fun=='cor',1,Inf)
-      max_value = ifelse(input$transform_fun=='cor',1,rng[2])
+      # min_min_range = ifelse(input$transform_fun=='cor',-1,-Inf)
+      # min_max_range = ifelse(input$transform_fun=='cor',1,rng[1])
+      # min_value = ifelse(input$transform_fun=='cor',-1,rng[1])
+      # max_min_range = ifelse(input$transform_fun=='cor',-1,rng[2])
+      # max_max_range = ifelse(input$transform_fun=='cor',1,Inf)
+      # max_value = ifelse(input$transform_fun=='cor',1,rng[2])
+      transform_fun <- "."
+      min_min_range = ifelse(transform_fun=='cor',-1,-Inf)
+      min_max_range = ifelse(transform_fun=='cor',1,rng[1])
+      min_value = ifelse(transform_fun=='cor',-1,rng[1])
+      max_min_range = ifelse(transform_fun=='cor',-1,rng[2])
+      max_max_range = ifelse(transform_fun=='cor',1,Inf)
+      max_value = ifelse(transform_fun=='cor',1,rng[2])
 
       a_good_step = 0.1 # (max_range-min_range) / n_data
 
       list(
-        shiny::numericInput(ns("colorRng_min"), "Set Color Range (min)", value = min_value, min = min_min_range, max = min_max_range, step = a_good_step),
-        shiny::numericInput(ns("colorRng_max"), "Set Color Range (max)", value = max_value, min = max_min_range, max = max_max_range, step = a_good_step)
+        numericInput(ns("colorRng_min"), "Set Color Range (min)", value = min_value, min = min_min_range, max = min_max_range, step = a_good_step),
+        numericInput(ns("colorRng_max"), "Set Color Range (max)", value = max_value, min = max_min_range, max = max_max_range, step = a_good_step)
       )
 
     })
   })
 
 
-  observeEvent(c(#input$setSeed,
-                 input$selRows,
-                 input$selCols),ignoreInit = TRUE,priority = 10, {
+  # observeEvent({#input$setSeed,
+  #                input$selRows
+  #                #reactives$variableFeatures
+  #                input$selCols},ignoreInit = TRUE,priority = 10, {
+  #                  variableFeaturesranked <- order(reactives$variableFeatures,
+  #                                      decreasing=TRUE)
+  #                  print(head(variableFeaturesranked))
+  #
+  #                  #if(input$showSample){
+  #                   data.in <- reactives$obj
+  #                    if(!is.null(input$selRows)){
+  #                      # print("selrow not nut")
+  #                      # set.seed(input$setSeed)
+  #                      set.seed(500)
+  #                      #if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
+  #                        if((input$selRows >= 5)){
+  #                        print("morethan2selrow and selrows < datain")
+  #                        # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
+  #                        if(length(input$selCols) == 0) {
+  #                          print("input$selCols == 0")
+  #                          data.in=data.in[variableFeaturesranked[1:input$selRows],]}
+  #                        if(length(input$selCols)>1) {
+  #                          print("input$selCols >5")
+  #                          print(input$selCols)
+  #                          print(head(variableFeaturesranked))
+  #                          data.in=data.in[variableFeaturesranked[1:input$selRows],input$selCols]}
+  #                      }
+  #                    }
+  #                   reactives2$selData <- data.in
+  #                 #}
+  #   }) # end of observer
 
 
-                   variableFeaturesranked <- order(reactives$variableFeatures,
-                                       decreasing=TRUE)
-
-                   if(input$showSample){
-                    data.in <- reactives$obj
-                     if(!is.null(input$selRows)){
-                       # print("selrow not nut")
-                       # set.seed(input$setSeed)
-                       set.seed(500)
-                       if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
-                         print("morethan2selrow and selrows < datain")
-                         # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
-                         if(length(input$selCols)<=1) {
-                           print("input$selCols)<=1")
-                           data.in=data.in[variableFeaturesranked[1:input$selRows],]}
-                         if(length(input$selCols)>1) {
-                           print("input$selCols)>1")
-                           data.in=data.in[variableFeaturesranked[1:input$selRows],input$selCols]}
-                       }
-                     }
-                    reactives2$selData <- data.in
-                   }
-    }) # end of observer
-
-
-interactiveHeatmap<- shiny::reactive({
-    data.in <- reactives2$selData
+interactiveHeatmap<- reactive({
+  data.in <- reactives$obj
+  #data.in <- reactives2$selData
     # if(input$showSample){
       # if(!is.null(input$selRows)){
       #   print("selrow not nut")
@@ -325,22 +386,22 @@ interactiveHeatmap<- shiny::reactive({
     }
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
     #if(input$transpose) data.in=t(data.in)
-    if(input$transform_fun!='.'){
-      if(input$transform_fun=='is.na10'){
-        shiny::updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
-        data.in[, ss_num] = heatmaply::is.na10(data.in[, ss_num])
-      }
-      if(input$transform_fun=='cor'){
-        shiny::updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
-        shiny::updateCheckboxInput(session = session,inputId = ns('colRngAuto'),value = FALSE)
-        data.in=stats::cor(data.in[, ss_num],use = "pairwise.complete.obs")
-      }
-      if(input$transform_fun=='log') data.in[, ss_num]= apply(data.in[, ss_num],2,log)
-      if(input$transform_fun=='sqrt') data.in[, ss_num]= apply(data.in[, ss_num],2,sqrt)
-      if(input$transform_fun=='normalize') data.in=heatmaply::normalize(data.in)
-      if(input$transform_fun=='scale') data.in[, ss_num] = scale(data.in[, ss_num])
-      if(input$transform_fun=='percentize') data.in=heatmaply::percentize(data.in)
-    }
+    # if(input$transform_fun!='.'){
+    #   if(input$transform_fun=='is.na10'){
+    #     updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
+    #     data.in[, ss_num] = heatmaply::is.na10(data.in[, ss_num])
+    #   }
+    #   if(input$transform_fun=='cor'){
+    #     updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
+    #     updateCheckboxInput(session = session,inputId = ns('colRngAuto'),value = FALSE)
+    #     data.in=stats::cor(data.in[, ss_num],use = "pairwise.complete.obs")
+    #   }
+    #   if(input$transform_fun=='log') data.in[, ss_num]= apply(data.in[, ss_num],2,log)
+    #   if(input$transform_fun=='sqrt') data.in[, ss_num]= apply(data.in[, ss_num],2,sqrt)
+    #   if(input$transform_fun=='normalize') data.in=heatmaply::normalize(data.in)
+    #   if(input$transform_fun=='scale') data.in[, ss_num] = scale(data.in[, ss_num])
+    #   if(input$transform_fun=='percentize') data.in=heatmaply::percentize(data.in)
+    # }
 
     if(input$colRngAuto){
       ColLimits=NULL
@@ -359,7 +420,7 @@ interactiveHeatmap<- shiny::reactive({
     }
     }
     if (length(input$distFun_col) != 0){
-      print(input$distFun_col)
+      #print(input$distFun_col)
       if(input$distFun_col != "pearson"){
         distfun_col = function(x) stats::dist(x, method = input$distFun_col)
       } else {
@@ -399,7 +460,7 @@ interactiveHeatmap<- shiny::reactive({
 
     p$elementId <- NULL
 
-    p
+    return(p)
 
     } else {
 
@@ -445,11 +506,11 @@ interactiveHeatmap<- shiny::reactive({
         if (length(input$distFun_col) != 0){
           if(input$distFun_col != "pearson"){
             p$dendCol <- cutree(
-            hclust(dist(data.in,method = input$distFun_col),method = input$hclustFun_col),
+            hclust(dist(t(data.in),method = input$distFun_col),method = input$hclustFun_col),
             k = input$c)
           } else {
             p$dendCol <- cutree(
-            hclust(1- factoextra::get_dist(data.in, method = "pearson", stand = FALSE),
+            hclust(1- factoextra::get_dist(t(data.in), method = "pearson", stand = FALSE),
                    method = input$hclustFun_col),
             k = input$c)
           }
@@ -459,17 +520,18 @@ interactiveHeatmap<- shiny::reactive({
        # k = input$c)
 
       p$elementId <- NULL
-      p
+      #p
+      return(p)
     }
   })
 
-  shiny::observeEvent(reactives2$selData,{
+  observeEvent(reactives2$selData,{
     output$heatout <- plotly::renderPlotly({
       interactiveHeatmap()
     })
   })
 
-  output$tables=shiny::renderDataTable(reactives2$selData#,server = TRUE,filter='top',
+  output$tables=renderDataTable(reactives2$selData#,server = TRUE,filter='top',
                                        #                               extensions = c('Scroller','FixedHeader','FixedColumns','Buttons','ColReorder'),
                                        #                               options = list(
                                        #                                 dom = 't',
@@ -485,7 +547,7 @@ interactiveHeatmap<- shiny::reactive({
   )
 
   #Clone Heatmap ----
-  shiny::observeEvent({interactiveHeatmap()},{
+  observeEvent({interactiveHeatmap()},{
     h<-interactiveHeatmap()
 
     l<-list(main = input$main,xlab = input$xlab,ylab = input$ylab,
@@ -520,7 +582,7 @@ interactiveHeatmap<- shiny::reactive({
                            )
     )
 
-    output$downloadData <- shiny::downloadHandler(
+    output$downloadData <- downloadHandler(
       filename = function() {
         paste0("heatmaply-", strftime(Sys.time(),'%Y%m%d_%H%M%S'), ".html")
       },

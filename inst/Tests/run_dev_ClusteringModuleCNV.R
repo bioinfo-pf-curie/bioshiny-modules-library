@@ -29,6 +29,7 @@ if (interactive()){
 
     library(dplyr)
     inFile <- system.file("extdata", "CNV_per_genes_table.RDA",package = "PdxAppPackage")
+    #inFile <- system.file("extdata", "CnGap_CNL.RDA",package = "PdxAppPackage")
     load(inFile)
 
     CNVploidy <- as.data.frame(read.table(system.file("extdata", "PloidyCNV.txt", package = "PdxAppPackage"), header = TRUE))
@@ -37,9 +38,6 @@ if (interactive()){
 
       print("CNVploidy")
       print(head(CNVploidy))
-
-      # CNVtabsub <- CNVtabmatrix %>%
-      #   select(c("GENE","sample","GNL","CnGap"))
 
       CNVmatrixspread <- CNVtabmatrix[,c("GENE","CnGap","sample")] %>% distinct(GENE,sample,.keep_all = TRUE) %>% tidyr::spread(sample,CnGap)
       rownames(CNVmatrixspread) <- CNVmatrixspread$GENE
@@ -62,42 +60,22 @@ if (interactive()){
         }
 
       }
-      #####
-
     metaCNV <- data.frame(Sample = unique(CNVploidy$Sample))
     rownames(metaCNV) <- metaCNV$Sample
     metaCNV$Sample <- NULL
     metaCNV$Group1 <- 'a'
     metaCNV$Group2 <- 'b'
 
-    # print("MetaCNV")
-    # print(head(metaCNV))
-
-
-
     observe({
-
-
     CNVmatrixspread <- reactiveValues(table = na.omit(CNVmatrixspread[1:50,]))
     metadataClustCNV <- reactiveValues(table = metaCNV )
 
     if (!is.null(metadataClustCNV) & !is.null(CNVmatrixspread)){
-
-
     CNVclust <- callModule(ClusteringServerCNV,"ClusterCNV",
                            data = CNVmatrixspread, metadata = metadataClustCNV,printRows = FALSE,session = session)
 
     } # end of IF
-
     })
-    #
-    #
-    #
-    #})
-
-
-
-
 
   }
   shinyApp(ui, server)
