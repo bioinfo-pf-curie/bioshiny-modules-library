@@ -695,7 +695,8 @@ Volcano <- reactiveValues(plot = NULL)
 observe({
   req(results$res)
   tic("Ploting Volcano")
-  ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(adj.P.Val))) +
+  #ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(adj.P.Val))) +
+  ggplot <- ggplot(results$res, aes(x = logFC, y = -log10(P.Value))) +
     ggtitle(colnames(reactives$contrast)) +
     scale_fill_gradient(low = "lightgray", high = "navy") +
     scale_color_gradient(low = "lightgray", high = "navy") +
@@ -711,9 +712,9 @@ observe({
                color = "blue", alpha = 0.5) +
     geom_point(data = subset(results$res, adj.P.Val < input$PvalsT),
                color = "green", alpha = 0.5) +
-    geom_vline(xintercept = min(-log10(results$res$P.Value))) +
-    geom_hline(yintercept = min(-log10(results$res$P.Value))) +
-    geom_hline(yintercept = -log10(input$PvalsT), linetype = "dashed") +
+    #geom_vline(xintercept = min(-log10(results$res$P.Value))) +
+    #geom_hline(yintercept = min(-log10(results$res$P.Value))) +
+    geom_hline(yintercept = -log10(max(subset(results$res, adj.P.Val < input$PvalsT)$P.Value)), linetype = "dashed") +
     geom_vline(xintercept = c(-input$FCT, input$FCT), linetype = "dashed") +
     theme_linedraw() +
     theme(panel.grid = element_blank()) +
