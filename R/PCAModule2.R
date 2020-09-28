@@ -83,15 +83,14 @@ DrawPCAUI2 <- function(id) {
                fluidRow(
                #fillRow(
                  h3("PC plot: zoom and select points"),
-                 p("Click and drag on the first plot below to zoom into a region on the plot. Or you can go directly to the second plot below to select points to get more information about them."),
-                 p("Then select points on zoomed plot below to get more information about the points."),
-                 p("You can click on the 'Compute PCA' tab at any time to change the variables included in the PCA, and then come back to this tab and the plots will automatically update.")),
+                 p("Click and drag on the first plot below to zoom into a region on the plot. Or you can go directly to the second plot below to select points to get more information about them.")
+                 ),
                fluidRow(
                #fillRow(
                  column(8,
                                plotOutput (ns("PCA_PLOT"), width = '100%',
                                            brush = brushOpts(
-                                             id = "PCA_PLOTBrush",
+                                             id = ns("PCA_PLOTBrush"),
                                              resetOnNew = TRUE))
                ),column(4,
                         wellPanel(
@@ -103,26 +102,27 @@ DrawPCAUI2 <- function(id) {
                                         value = TRUE),
                           checkboxInput(inputId = ns('label_points'),
                                         label = 'Use sample labels for data points',
-                                        value = FALSE),
-                          checkboxInput(inputId = ns('select_display'),
-                                        label = 'Show list of samples to display on plot',
-                                        value = FALSE),
-                          conditionalPanel(condition="input.select_display==true",
-                                           p("Deselecting samples from the list below will remove them from the plot without recalculating the PCA.
-                        To remove samples from the PCA calculation, deselect them from the 'Parameters' tab"),
-                                           uiOutput(ns("choose_samples_display"))
+                                        value = FALSE)
+                          # checkboxInput(inputId = ns('select_display'),
+                          #               label = 'Show list of samples to display on plot',
+                          #               value = FALSE),
+                        #   conditionalPanel(condition="input.select_display==true",
+                        #                    p("Deselecting samples from the list below will remove them from the plot without recalculating the PCA.
+                        # To remove samples from the PCA calculation, deselect them from the 'Parameters' tab"),
+                        #                    uiOutput(ns("choose_samples_display"))
 
                           #) #End of TagList
                                            )
                         )), # end row
-               h3("Zoomed biplot"),
-               p("The selected points in the plots above are zoomed in on this plot and their details are available in the table below."),
-               column(8,
+               fluidRow(column(8,
+                      h3("Zoomed biplot"),
+                      p("The selected points in the plots above are zoomed in on this plot and their details are available in the table below."),
                       plotOutput(ns("ZOOMED_PLOT"), height = 400)
                ),
-               h3("Zoomed points table"),
-               p("Details of the points displayed in the zoomed plot above:"),
-               tableOutput(ns("brush_info_after_zoom")))
+               column(4,
+                      h3("Zoomed points table"),
+                      p("Details of the points displayed in the zoomed plot above:"),
+               DT::dataTableOutput(ns("brush_info_after_zoom"))))
       ), # end  tab
 
       tabPanel("Output",id = ns("Output"),
@@ -257,19 +257,17 @@ DrawPCAServer2 <- function(input, output, session, matrix = NULL, annotation = N
 
 
   # Check boxes to choose samples to display on the plot
-  output$choose_samples_display <- renderUI({
-    the_metadata <- pca_objects$the_metadata
-
-    samplenames <- rownames(the_metadata)
-
-    # Create the checkboxes and select them all by default
-    #tagList(
-    checkboxGroupInput(ns("display_samples"),
-                       "Choose samples to display on the plot:",
-                       choices  = samplenames,
-                       selected = samplenames)
-    #)
-     })
+  # output$choose_samples_display <- renderUI({
+  #   the_metadata <- pca_objects$the_metadata
+  #   samplenames <- rownames(the_metadata)
+  #   # Create the checkboxes and select them all by default
+  #   #tagList(
+  #   checkboxGroupInput(ns("display_samples"),
+  #                      "Choose samples to display on the plot:",
+  #                      choices  = samplenames,
+  #                      selected = samplenames)
+  #   #)
+  #    })
 
 
   #### Il fau que les samplenames soient dipi avant de lancer PCAGo sinan ça marche pas !!!
@@ -615,7 +613,7 @@ observeEvent( c(input$plotpca,
       #
     })
     #   #
-    output$brush_info_after_zoom <- renderTable({
+    output$brush_info_after_zoom <- DT::renderDataTable(options = list(scrollX = TRUE),{
       # get the pca metadata
       the_metadata_subset <- pca_objects$the_metadata
       metadata_cols <- names(the_metadata_subset)
@@ -627,8 +625,7 @@ observeEvent( c(input$plotpca,
       }
 
       # now return only the columns from the pca data tha match the metadata colnames
-      data.frame(sample=rownames(the_pca_data),the_pca_data[, metadata_cols])
-
+      data.frame(the_pca_data[, metadata_cols])
     })
     #   #
     output$pca_details <- renderPrint({
