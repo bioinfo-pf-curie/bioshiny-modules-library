@@ -9,7 +9,7 @@ output:
   html_document:
     df_print: paged
 ---
-[]!(images/Icurie.jpg) []!(images/Bioshiny.png)
+[]!(https://gitlab.curie.fr/r-shiny/bioshiny-modules-library/blob/devel/images/Bioshiny.png) []!(images/Bioshiny.png)
 
 # Description
 
