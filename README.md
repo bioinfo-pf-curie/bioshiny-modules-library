@@ -75,7 +75,10 @@ ui <- dashboardPage(
 ==============
 
 The current available modules can be test executing the whole code in
-the corresponding inst/Tests/run\_dev\_**ModuleName**Module.R file.
+the corresponding **run\_dev\_ModuleNameModule.R** file in the </br>
+
+- [inst/Tests/](inst/Tests/)
+directory
 
 5 Contact
 =========
