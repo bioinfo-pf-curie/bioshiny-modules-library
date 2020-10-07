@@ -1,3 +1,5 @@
+\[\]!(images/curie.base64.txt) \[\]!(images/bioshiny.base64.txt)
+
 1 Description
 =============
 
