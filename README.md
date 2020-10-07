@@ -1,5 +1,3 @@
-\[\]!(images/Icurie.jpg) \[\]!(images/Bioshiny.png)
-
 1 Description
 =============
 
@@ -11,12 +9,20 @@ shiny apps.
 ==============
 
 -   Download and unzip the source code
--   run the following command :
-    renv::init(“path\_to\_bioshiny\_module\_library\_folder/”). This
-    should install the library dependancies.
+-   Create an empty app project directory and copy renv.lock into it
+-   Then run the following command :
+
+``` r
+  renv::init("path_to_your_app_folder/").
+```
+
+This should install the library dependancies.
+
 -   Finally install the library
-    install.packages(“path\_to\_bioshiny\_module\_library\_folder/”,
-    type = “source”, repos = NULL)
+
+``` r
+install.packages("path_to_bioshiny_module_library_folder/", type = "source", repos = NULL)
+```
 
 3 Call a module
 ===============
@@ -28,7 +34,7 @@ second in the UI part.
 ---------------
 
 In the CallModule function you stipulate the library module that you
-want to call (tipically called ModuleNameServer), and an id for this
+want to call (typically called **ModuleName**Server), and an id for this
 specific call.
 
 ``` r
@@ -49,7 +55,7 @@ and share data objects.
 3.2 UI part
 -----------
 
-In the UI call the corresponding ModuleNameUI function, with the
+In the UI call the corresponding **ModuleName** UI function, with the
 matching id.
 
 ``` r
@@ -65,8 +71,14 @@ ui <- dashboardPage(
 )
 ```
 
-4 Contact
+4 Modules List
+==============
+
+The current available modules can be test executing the whole code in
+the corresponding inst/Tests/run\_dev\_**ModuleName**Module.R file.
+
+5 Contact
 =========
 
-If you have any question or suggestions please contact
+If you have any question, suggestions or bug reports please contact
 <pierre.gestraud@curie.fr> and <clement.benoit@curie.fr>

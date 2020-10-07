@@ -9,7 +9,6 @@ output:
   html_document:
     df_print: paged
 ---
-[]!(images/Icurie.jpg) []!(images/Bioshiny.png)
 
 # Description
 
@@ -18,16 +17,25 @@ This library aims to provide R shiny apps developper of the Institut Curie with 
 # Installation
 
   + Download and unzip the source code
-  + run the following command : renv::init("path_to_bioshiny_module_library_folder/"). This should install the library dependancies.
-  + Finally install the library install.packages("path_to_bioshiny_module_library_folder/", type = "source", repos = NULL)
-  
+  + Create an empty app project directory and copy renv.lock into it
+  + Then run the following command :
+```{r, eval=FALSE}
+  renv::init("path_to_your_app_folder/").
+```
+This should install the library dependancies.
+
+  + Finally install the library 
+```{r, eval=FALSE}
+install.packages("path_to_bioshiny_module_library_folder/", type = "source", repos = NULL)
+```  
+
 # Call a module
 
 To do so you have to call two functions, one in the server and the second in the UI part. 
 
 ## Server Part
 
-In the CallModule function you stipulate the library module that you want to call (tipically called ModuleNameServer), and an id for this specific call. 
+In the CallModule function you stipulate the library module that you want to call (typically called **ModuleName**Server), and an id for this specific call. 
 
 ```{r, eval=FALSE}
   server <- function(input, output, session) {
@@ -43,7 +51,7 @@ In the CallModule function you stipulate the library module that you want to cal
 
 ## UI part
 
-In the UI call the corresponding ModuleNameUI function, with the matching id. 
+In the UI call the corresponding **ModuleName** UI function, with the matching id. 
 
 ```{r, eval=FALSE}
 ui <- dashboardPage(
@@ -58,6 +66,10 @@ ui <- dashboardPage(
 )
 ```
 
+# Modules List
+
+The current available modules can be test executing the whole code in the corresponding inst/Tests/run_dev_**ModuleName**Module.R file.
+
 # Contact
 
-If you have any question or suggestions please contact [pierre.gestraud@curie.fr](mailto:pierre.gestraud@curie.fr) and  [clement.benoit@curie.fr](mailto:clement.benoit@curie.fr)
+If you have any question, suggestions or bug reports please contact [pierre.gestraud@curie.fr](mailto:pierre.gestraud@curie.fr) and  [clement.benoit@curie.fr](mailto:clement.benoit@curie.fr)
