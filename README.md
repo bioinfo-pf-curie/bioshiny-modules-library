@@ -1,7 +1,7 @@
 1 Description
 =============
 
-This library aims to provide R shiny apps developper of the Institut
+This library aims to provide R shiny apps developers of the Institut
 Curie with different modules witch can be used as bricks to build bigger
 shiny apps.
 
@@ -9,7 +9,7 @@ shiny apps.
 ==============
 
 -   Download and unzip the source code
--   Create an empty app project directory and copy renv.lock into it
+-   Create an empty app project directory and copy **renv.lock** into it
 -   Then run the following command :
 
 ``` r
