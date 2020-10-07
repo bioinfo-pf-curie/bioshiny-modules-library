@@ -1,4 +1,4 @@
-\[\]!(images/curie.base64.txt) \[\]!(images/bioshiny.base64.txt)
+\[\]!(images/Icurie.jpg) \[\]!(images/Bioshiny.png)
 
 1 Description
 =============
