@@ -23,8 +23,6 @@ if (interactive()){
     metadata_path <- system.file("extdata", "metadata.csv", package = "BioshinyModules")
     counts_path <- system.file("extdata", "rawcounts.csv", package = "BioshinyModules")
 
-
-
     metadata <- reactiveValues(table = read.table(metadata_path, header = TRUE, sep = ",",
                                                   row.names = 1)
     )
