@@ -839,7 +839,7 @@ observeEvent(input$GeneVolcano,{
   if(input$var != "Create your own groups"){
     boxplotdata[,input$var] <- as.character(boxplotdata[,input$var])
     results$boxplots <- ggplot(boxplotdata, aes(x=GENE, y=COUNTS, fill = GENE)) +
-      geom_boxplot() +
+      geom_boxplot(outlier.alpha = FALSE) +
       #theme(legend.position = "none") +
       geom_point(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
                                                seed = 1234),
