@@ -17,7 +17,7 @@ ClusteringServer(
 \arguments{
 \item{input, output, session}{standards \code{shiny} server arguments.}
 
-\item{data}{A reactiveValues containing the table reactiveValue with table a dataframe. Example data$table  a reactive dataframe}
+\item{data}{}
 
 \item{name}{Does the file have a Header}
 }

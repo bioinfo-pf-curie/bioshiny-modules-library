@@ -34,6 +34,7 @@ MergedDeaModUI <- function(id)  {
       #fluidPage(
       br(),
       #fluidRow(
+      column(width=12,
       box(title = "Creates DEG model",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "primary",width= 12,
           #fluidRow(
@@ -46,11 +47,13 @@ MergedDeaModUI <- function(id)  {
           #        actionButton(ns("help1"),"",icon = icon("info"))
           #        )
           #fluidRow(
-          uiOutput(ns("vars_selUI"))
+          column(width = 12,
+          uiOutput(ns("vars_selUI"))))
           #)
       ), # end of box
       #), # end of fluidRow
       #fluidRow(
+      column(width = 12,
       box(title = "Comparison",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
           status = "primary",width= 12,
           #fluidRow(
@@ -125,7 +128,7 @@ MergedDeaModUI <- function(id)  {
                  ))),
       br(),
       br(),
-      actionButton(ns("Build"),"Build Model")
+      actionButton(ns("Build"),"Build Model"))
     ), # end of first tabs
 
 tabPanel("Figures",
@@ -138,8 +141,8 @@ tabPanel("Figures",
         #column(width = 6,selectInput(ns("transformed"),"Perform DEA on ",choices = c("Raw data","Rlog Data","VST Data")))
       ),
       fluidRow(
-        column(width = 6,selectInput(ns("AdjMeth"),"Select an adjustment method", choices = c("BH","none","BY","holm"), selected = "BH")),
-        column(width = 6,numericInput(ns("PvalsT"),"adjusted P values threshold", min = 0, max = 1 , value = 0.05, step = 0.01))),
+        #column(width = 6,selectInput(ns("AdjMeth"),"Select an adjustment method", choices = c("BH","none","BY","holm"), selected = "BH")),
+        column(width = 12,numericInput(ns("PvalsT"),"adjusted P values threshold", min = 0, max = 1 , value = 0.05, step = 0.01))),
       fluidRow(
         column(width = 12,numericInput(ns("FCT"),"LogFC threshold", min = 0, max = 10 , value = 1, step = 0.05))#,
         #column(width = 6, infoBoxOutput(ns("featuress"),tags$style("#featuress {width:230px;}")))
@@ -373,18 +376,7 @@ observeEvent(input$remove1,{
       }
     })
 
-    # output$var <- renderUI({
-    #
-    #   tagList(
-    #     column(width = 8,
-    #     selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
-    #                 multiple = FALSE, selected = var[1]))
-    #   )
-    # })
-
-
     observeEvent(input$help1,{
-
       showModal(modalDialog(HTML(
         "<b>Variable of interest :</b></br>
     The variable that you want to use to create sample groups for the DE analysis </br></br></br>
@@ -398,53 +390,64 @@ observeEvent(input$remove1,{
         footer = tagList(
           modalButton("Got it"),
         )))
-
-
     })
 
     output$vars_selUI <- renderUI({
-
       tagList(
         fluidRow(
+          # column(width = 10,
+          #        selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
+          #                    multiple = FALSE, selected = var[1],width = '100%')),
+          # column(width = 10,
+          #        selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
+          #                    multiple = FALSE, selectize = TRUE, selected = "",width ='100%')),
           column(width = 10,
-                 selectInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
-                             multiple = FALSE, selected = var[1])),
+                 pickerInput(ns("var"),"Variable of interest :",choices = c(var,"Create your own groups"),
+                             multiple = FALSE, selected = var[1],width = '100%',
+                             inline = FALSE,
+                             options = pickerOptions(
+                               actionsBox = TRUE,
+                               title = "Select guides you want to remove",
+                               liveSearch = TRUE,
+                               liveSearchStyle = "contains"
+                             ))),
           column(width = 10,
-                 selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
-                             multiple = FALSE, selectize = TRUE, selected = "")),
+                 pickerInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
+                             multiple = FALSE, selected = "",width ='100%',
+                             inline = FALSE,
+                             options = pickerOptions(
+                               actionsBox = TRUE,
+                               title = "Select guides you want to remove",
+                               liveSearch = TRUE,
+                               liveSearchStyle = "contains"
+          ))),
           column(width = 2,
                  actionButton(ns("help1"),"",icon = icon("info")))
         )
       )
     })
 
-    # output$covar <- renderUI({
-    #   tagList(
-    #     column(width = 8,
-    #     selectInput(ns("covar"),"Covariables :",choices = c("None" = "",var),
-    #                 multiple = FALSE, selectize = TRUE, selected = ""))
-    #   )
-    #
-    # })
-
     output$Group1 <- renderUI({
       tagList(
         if(!is.null(input$var)) {
-        #if(length(input$var) != 0) {
         if(input$var != "Create your own groups"){
-        selectInput(ns("Group1sel"),"Group 1", choices = na.omit(levels(sampleplan$table[,input$var])),
-                    selected= na.omit(levels(sampleplanmodel$table[,input$var])[1]))
+        #selectInput(ns("Group1sel"),"Group 1", choices = na.omit(levels(sampleplan$table[,input$var])),
+        #            selected= na.omit(levels(sampleplanmodel$table[,input$var])[1]))
+        pickerInput(ns("Group1sel"),"Group 1", choices = na.omit(levels(sampleplan$table[,input$var])),
+                    selected= na.omit(levels(sampleplanmodel$table[,input$var])[1]),
+                    options = pickerOptions(
+                      actionsBox = TRUE,
+                      title = "Group 1",
+                      liveSearch = TRUE,
+                      liveSearchStyle = "contains"
+                    ))
 
-        # } else if (input$var == "Create your own groups"){
-        #
-        #
         }
         }
         )
     })
 
     observe({
-
       if(!is.null(input$var)) {
       if(input$var != "Create your own groups"){
       groups$Group1 <- rownames(sampleplanmodel$table[which(sampleplanmodel$table[,input$var] == input$Group1sel),])
@@ -474,9 +477,6 @@ observeEvent(input$remove1,{
                   ))
       ),
       column(width = 6,
-             # checkboxGroupInput(ns("createGroup2"), "select samples to add in group 2",
-             #                                      choices = rownames(sampleplanmodel$table),
-             #                                      selected = NULL)
              pickerInput(ns("createGroup2"), "select samples to add in group 2",
                          choices = rownames(sampleplanmodel$table),
                          selected = NULL,
@@ -548,8 +548,17 @@ observeEvent(input$remove1,{
     output$Group2 <- renderUI({
       tagList(
         if(input$var != "Create your own groups"){
-        selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(sampleplan$table[,input$var])),
-                    selected = na.omit(levels(sampleplanmodel$table[,input$var])[2]) )
+        #selectInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(sampleplan$table[,input$var])),
+        #            selected = na.omit(levels(sampleplanmodel$table[,input$var])[2]) )
+        pickerInput(ns("Group2sel"),"Group 2", choices  = na.omit(levels(sampleplan$table[,input$var])),
+                    selected = na.omit(levels(sampleplanmodel$table[,input$var])[2]),
+                    inline = FALSE,
+                    options = pickerOptions(
+                      actionsBox = TRUE,
+                      title = "Select guides you want to remove",
+                      liveSearch = TRUE,
+                      liveSearchStyle = "contains"
+                    ))
         }
       )
 
@@ -631,7 +640,8 @@ observeEvent(input$remove1,{
                        fit2 <- contrasts.fit(fit,reactives$contrast)
                        #Given a microarray linear model fit, compute moderated t-statistics, moderated F-statistic, and log-odds of differential expression by empirical Bayes moderation of the standard errors towards a common value.
                        fit2 <- eBayes(fit2)
-                       res <- topTable(fit2, number=nrow(counts), adjust.method=input$AdjMeth)
+                       #res <- topTable(fit2, number=nrow(counts), adjust.method=input$AdjMeth)
+                       res <- topTable(fit2, number=nrow(counts), adjust.method="BH")
                        res <- res[order(res$adj.P.Val),]
                        res$genes <- rownames(res)
                        results$res <- res

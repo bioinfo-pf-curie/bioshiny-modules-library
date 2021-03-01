@@ -134,7 +134,7 @@ ClusteringUI <- function(id){
 
 #' @param input,output,session standards \code{shiny} server arguments.
 #' @param name Does the file have a Header
-#' @param data A reactiveValues containing the table reactiveValue with table a dataframe. Example data$table  a reactive dataframe
+#' @param data 
 #'
 #' @export
 #'
