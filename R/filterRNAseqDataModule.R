@@ -76,6 +76,8 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
                  #input$TPM_sum
                  input$TPM_filter,
                  input$nsamples),{
+  req(input$nsamples)
+  req(input$TPM_filter)
 
   if (!is.null(data$table)){
   data <- data$table
