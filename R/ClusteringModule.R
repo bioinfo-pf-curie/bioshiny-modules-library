@@ -13,7 +13,6 @@
 #'
 #'
 #'
-
 ClusteringUI <- function(id){
 
   ns <- NS(id)
@@ -30,37 +29,33 @@ ClusteringUI <- function(id){
         sidebarPanel(width = 12,
           fluidRow(
           box(title = 'Clustering data',collapsible = TRUE,collapsed = FALSE,width = NULL, status = "primary",solidHeader = TRUE,
-          #htmltools::h4('Data'),
-          #uiOutput(ns('data')),
           fluidPage(
-          #checkboxInput(ns('showSample'),'Subset Data'),
-          #conditionalPanel('input.showSample == 1',ns = ns,hr(),uiOutput(ns('sample'))),
-          #uiOutput(ns('sample')),
-          #htmltools::hr(),htmltools::h4('Data Preprocessing'),
-          #column(width=4,selectizeInput(ns('transpose'),'Transpose',choices = c('No'=FALSE,'Yes'=TRUE),selected = FALSE)),
-          #column(width=4,selectizeInput(ns("transform_fun"), "Transform", c(Identity=".",Sqrt='sqrt',log='log',Scale='scale',Normalize='normalize',Percentize='percentize',"Missing values"='is.na10', Correlation='cor'),selected = '.')),
-          uiOutput(ns('annoVars')),
-          #htmltools::br(),htmltools::hr(),htmltools::h4('Row dendrogram'),
+          pickerInput(ns('annoVar'),'Annotation',
+                      choices = NULL,
+                      selected=NULL,
+                      multiple=TRUE,
+                      options = pickerOptions(
+                        actionsBox = TRUE,
+                        title = "Select variables for annotation",
+                        liveSearch = TRUE,
+                        liveSearchStyle = "contains",
+                      )),
           column(width=12,sliderInput(ns("r"), "Number of row Clusters", min = 1, max = 15, value = 2)),
-          #column(width=4,numericInput("r", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
-          #htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-          column(width=12,sliderInput(ns("c"), "Number of column Clusters", min = 1, max = 15, value = 2)),
-          #column(width=4,numericInput("c", "Number of Clusters", min = 1, max = 20, value = 2, step = 1)),
-
+          column(width=12,sliderInput(ns("c"), "Number of column Clusters", min = 1, max = 15, value = 2))
           )
           ) # end of fluidPage
           ) # end of box and fluidRow
         ),
-        #mainPanel(
         mainPanel(width = 12,
           tabsetPanel(
             tabPanel("Heatmaply",
-                            #htmltools::tags$a(id = 'downloadData', class = paste("btn btn-default shiny-download-link",'mybutton'), href = "", target = "_blank", download = NA, icon("clone"), 'Download Heatmap as HTML'),
-                            #htmltools::tags$head(htmltools::tags$style(".mybutton{color:white;background-color:blue;} .skin-black .sidebar .mybutton{color: green;}") ),
-                            #plotly::plotlyOutput(ns("heatout"),height=paste0(500,'px')),
-                            #column(width = 12,plotly::plotlyOutput(ns("heatout"),height="100%",width = "700px")),
                             fluidRow(
-                              column(width = 12,plotly::plotlyOutput(ns("heatout"),height="100%",width = "100%"))),
+                              br(),
+                              br(),
+                              column(width = 12,actionButton(ns("launchheat"),"Compute heatmap with this parameters",width = "100%"))),
+                              br(),
+                              br(),
+                              fluidRow(column(width = 12,plotly::plotlyOutput(ns("heatout"),height="100%",width = "100%"))),
                             column(width = 12,
                                    br(),
                                    br(),
@@ -68,8 +63,6 @@ ClusteringUI <- function(id){
                                      box(title = "Additionnal Parameters", collapsible = TRUE,
                                          collapsed = TRUE, status = "primary", width = NULL, solidHeader = TRUE,
                                          fluidPage(
-                                           #htmltools::br(),htmltools::hr(),
-                                           #htmltools::h4('Additional Parameters'),
                                            column(3,checkboxInput(ns('showColor'),'Color')),
                                            column(3,checkboxInput(ns('showMargin'),'Layout')),
                                            column(3,checkboxInput(ns('showDendo'),'Dendrogram')),
@@ -86,13 +79,10 @@ ClusteringUI <- function(id){
                                                                    htmltools::hr(),
                                                                    htmltools::h4('Dendrogram Manipulation'),
                                                                    column(width=12,selectInput(ns('dendrogram'),'Dendrogram Type',choices = c("both", "row", "column", "none"),selected = 'both')),
-                                                                   #htmltools::br(),htmltools::hr(),
                                                                    htmltools::h4('Row dendrogram'),
-                                                                   #column(width=6,selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
                                                                    column(width=6,selectizeInput(ns("distFun_row"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
                                                                    column(width=6,selectizeInput(ns("hclustFun_row"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                                    htmltools::br(),htmltools::hr(),htmltools::h4('Column dendrogram'),
-                                                                   #column(width=6,selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean",Maximum='maximum',Manhattan='manhattan',Canberra='canberra',Binary='binary',Minkowski='minkowski'),selected = 'euclidean')),
                                                                    column(width=6,selectizeInput(ns("distFun_col"), "Distance method", c(Euclidean="euclidean"),selected = 'euclidean')),
                                                                    column(width=6,selectizeInput(ns("hclustFun_col"), "Clustering linkage", c(Complete= "complete",Single= "single",Average= "average",Mcquitty= "mcquitty",Median= "median",Centroid= "centroid",Ward.D= "ward.D",Ward.D2= "ward.D2"),selected = 'complete')),
                                                                    br(),
@@ -112,15 +102,19 @@ ClusteringUI <- function(id){
                                                                    sliderInput(ns("l"), "Set Margin Width", min = 0, max = 200, value = 5),
                                                                    sliderInput(ns("b"), "Set Margin Height", min = 0, max = 200, value = 5)
                                             )
-
                                          )# end of FluidPage
                                      ) # end of Box
                                    ) # end of fluidRow
                             ) # end of columnbox
             ),
-            tabPanel("Data",
-                            fluidRow(dataTableOutput(ns('tables')))
-            )
+            tabPanel("Clusters",
+                     fluidRow(
+                       column(width = 12,dataTableOutput(ns('clustersgenes'))),
+                       column(width = 12,downloadButton(ns('clustersgenesdl'),'Download genes clusters',width = "100%")),
+                       column(width = 12,dataTableOutput(ns('clustersamples'))),
+                       column(width = 12,downloadButton(ns('clustersamplesdl'),'Download samples clusters',width = "100%"))
+                              )
+            ) # end of tabPanel
           )
         ) # end of box
  # )#  end of shinyUI(
@@ -129,16 +123,11 @@ ClusteringUI <- function(id){
 ) # end of fluidPage
 }
 
-
-
-
 #' @param input,output,session standards \code{shiny} server arguments.
 #' @param name Does the file have a Header
 #' @param data 
 #'
 #' @export
-#'
-#'
 #' @title Draw clusters heatmap from counts matrix server side
 #' @importFrom shiny observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
@@ -147,129 +136,34 @@ ClusteringUI <- function(id){
 #' @import heatmaply
 #' @importFrom stats cor dist hclust
 #' @importFrom xtable xtable
+#' @importFrom tidyr pivot_wider
 #' @importFrom tools file_path_sans_ext
 #' @importFrom rmarkdown pandoc_available pandoc_self_contained_html
 #' @importFrom viridisLite viridis
 #' @importFrom viridis magma plasma inferno
 #' @importFrom SummarizedExperiment assay
+#' @importFrom tibble rownames_to_column
 
 
-# choices = c('Vidiris (Sequential)'="viridis",
-#             'Magma (Sequential)'="magma",
-#             'Plasma (Sequential)'="plasma",
-#             'Inferno (Sequential)'="inferno",
-
-#
-#             'RdBu (Diverging)'="RdBu",
-#             'RdYlBu (Diverging)'="RdYlBu",
-#             'RdYlGn (Diverging)'="RdYlGn",
-#             'BrBG (Diverging)'="BrBG",
-#             'Spectral (Diverging)'="Spectral",
-#
-#             'BuGn (Sequential)'='BuGn',
-#             'PuBuGn (Sequential)'='PuBuGn',
-#             'YlOrRd (Sequential)'='YlOrRd',
-#             'Heat (Sequential)'='heat.colors',
-#             'Grey (Sequential)'='grey.colors'),
-
-ClusteringServer <- function(input, output, session, data = NULL, metadata = NULL,printRows = FALSE, vst = FALSE) {
+ClusteringServer <- function(input, output, session, data = NULL, metadata = NULL,printRows = FALSE) {
 
   ns <- session$ns
 
-  reactives <- reactiveValues(obj =  data$table, metadata = metadata$table)
-  #,variableFeatures = genefilter::rowVars(vst$vars))
-  reactives2 <- reactiveValues(selData = data$table)
-
-  if (!is.null(data)){
-
- # observeEvent(reactives2$selData,{
-    output$annoVars<-renderUI({
-      # data.in=reactives2$selData
-      # NM=NULL
-      #
-      # if(any(sapply(data.in,class)=='factor')){
-      #   NM=names(data.in)[which(sapply(data.in,class)=='factor')]
-      # }
-      column(width=12,
-                    #selectizeInput('annoVar','Annotation',choices = names(data.in),selected=NM,multiple=TRUE,options = list(placeholder = 'select columns',plugins = list("remove_button")))
-                    #selectizeInput(ns('annoVar'),'Annotation',choices = colnames(reactives$metadata),selected=NM,multiple=TRUE,options = list(placeholder = 'select columns',plugins = list("remove_button")))
-                    pickerInput(ns('annoVar'),'Annotation',
-                                choices = colnames(reactives$metadata),
-                                # selected=NM,
-                                #choices = NULL,
-                                selected=NULL,
-                                multiple=TRUE,
-                                options = pickerOptions(
-                                         actionsBox = TRUE,
-                                         title = "Select variables for annotation",
-                                         liveSearch = TRUE,
-                                         liveSearchStyle = "contains",
-                                ))
-                    )
-    })
-
-#observe({
-  # data.in=reactives2$selData
-  # NM=NULL
-  #
-  # if(any(sapply(data.in,class)=='factor')){
-  #   NM=names(data.in)[which(sapply(data.in,class)=='factor')]
-  # }
-  # updatePickerInput('annoVar','Annotation',choices = colnames(reactives$metadata),
-  #                   #selected=NM,
-  #                   selected = NULL,
-  #                   session = session)
-#}) # enf of observeEvent
-    #Sampling UI ----
-
-    subdata <- reactiveValues(rows = nrow(data$table),
-                              #cols = names(data$table)
-                              cols = colnames(reactives2$selData)
-                              )
-
-    # observe({
-    # output$sample<-renderUI({
-    #   #req(reactives$obj)
-    #   list(
-    #     #column(4,textInput(inputId = ns('setSeed'),label = 'Seed',value = sample(1:10000,1))),
-    #     column(6,numericInput(inputId = ns('selRows'),label = 'Number of Rows',
-    #                                         min=1,
-    #                                         # max=pmin(500,subdata$rows),
-    #                                         # value = pmin(500,subdata$rows))
-    #                                         max=pmin(500,nrow(data$table)),
-    #                                         #max=pmin(500,nrow(reactives2$selData)),
-    #                                         #value = pmin(500,nrow(reactives2$selData)))
-    #                                         value = pmin(500,nrow(data$table)))
-    #
-    #                   ),
-    #     #column(6,selectizeInput(ns('selCols'),'Columns Subset',choices = subdata$cols,multiple=TRUE))
-    #     column(6,pickerInput(ns('selCols'),'Columns Subset',
-    #                                 #choices = subdata$cols,
-    #                                 #choices = colnames(reactives2$selData),
-    #                                 choices = colnames(data$table),
-    #                                 selected = NULL,
-    #                                 multiple=TRUE,
-    #                                 choicesOpt = NULL,
-    #                                 inline = FALSE,
-    #                                 #width =12,
-    #                                 options = pickerOptions(
-    #                                   actionsBox = FALSE,
-    #                                   title = "Select variables for annotation",
-    #                                   liveSearch = TRUE,
-    #                                   liveSearchStyle = "contains",
-    #                                 )))
-    #   )
-    # })
-  #}) # Intitial end of observeEvent
-  #})
-
-
+  reactives <- reactiveValues(metadata = NULL)
+  reactives2 <- reactiveValues(selData = NULL)
+  
+  observeEvent(data$table,{
+    reactives2$selData <- data$table
+  })
+  
+  observe({
+    reactives$metadata <-  metadata$table
+    #updatePickerInput(session = session, "annoVar", choices = colnames(metadata$table),selected = NULL)
+    updatePickerInput(session = session, "annoVar", choices = c("Clusters",colnames(metadata$table)),selected = NULL)
+  })
 
   output$colUI<-renderUI({
     colSel='Vidiris'
-    #if(input$transform_fun=='cor') colSel='RdBu'
-    #if(input$transform_fun=='is.na10') colSel='grey.colors'
-
     selectizeInput(inputId =ns("pal"), label ="Select Color Palette",
                           choices = c('Vidiris (Sequential)'="viridis",
                                       'Magma (Sequential)'="magma",
@@ -294,17 +188,8 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
 
   observeEvent({reactives2$selData},{
     output$colRng=renderUI({
-
       rng=range(reactives2$selData,na.rm = TRUE)
-
       n_data = nrow(reactives2$selData)
-
-      # min_min_range = ifelse(input$transform_fun=='cor',-1,-Inf)
-      # min_max_range = ifelse(input$transform_fun=='cor',1,rng[1])
-      # min_value = ifelse(input$transform_fun=='cor',-1,rng[1])
-      # max_min_range = ifelse(input$transform_fun=='cor',-1,rng[2])
-      # max_max_range = ifelse(input$transform_fun=='cor',1,Inf)
-      # max_value = ifelse(input$transform_fun=='cor',1,rng[2])
       transform_fun <- "."
       min_min_range = ifelse(transform_fun=='cor',-1,-Inf)
       min_max_range = ifelse(transform_fun=='cor',1,rng[1])
@@ -312,104 +197,29 @@ ClusteringServer <- function(input, output, session, data = NULL, metadata = NUL
       max_min_range = ifelse(transform_fun=='cor',-1,rng[2])
       max_max_range = ifelse(transform_fun=='cor',1,Inf)
       max_value = ifelse(transform_fun=='cor',1,rng[2])
-
       a_good_step = 0.1 # (max_range-min_range) / n_data
-
       list(
         numericInput(ns("colorRng_min"), "Set Color Range (min)", value = min_value, min = min_min_range, max = min_max_range, step = a_good_step),
         numericInput(ns("colorRng_max"), "Set Color Range (max)", value = max_value, min = max_min_range, max = max_max_range, step = a_good_step)
       )
-
     })
-  })
+})
 
 
-  # observeEvent({#input$setSeed,
-  #                input$selRows
-  #                #reactives$variableFeatures
-  #                input$selCols},ignoreInit = TRUE,priority = 10, {
-  #                  variableFeaturesranked <- order(reactives$variableFeatures,
-  #                                      decreasing=TRUE)
-  #                  print(head(variableFeaturesranked))
-  #
-  #                  #if(input$showSample){
-  #                   data.in <- reactives$obj
-  #                    if(!is.null(input$selRows)){
-  #                      # print("selrow not nut")
-  #                      # set.seed(input$setSeed)
-  #                      set.seed(500)
-  #                      #if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
-  #                        if((input$selRows >= 5)){
-  #                        print("morethan2selrow and selrows < datain")
-  #                        # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
-  #                        if(length(input$selCols) == 0) {
-  #                          print("input$selCols == 0")
-  #                          data.in=data.in[variableFeaturesranked[1:input$selRows],]}
-  #                        if(length(input$selCols)>1) {
-  #                          print("input$selCols >5")
-  #                          print(input$selCols)
-  #                          print(head(variableFeaturesranked))
-  #                          data.in=data.in[variableFeaturesranked[1:input$selRows],input$selCols]}
-  #                      }
-  #                    }
-  #                   reactives2$selData <- data.in
-  #                 #}
-  #   }) # end of observer
-
-
-interactiveHeatmap<- reactive({
-  data.in <- reactives$obj
-  #data.in <- reactives2$selData
-    # if(input$showSample){
-      # if(!is.null(input$selRows)){
-      #   print("selrow not nut")
-      #   #set.seed(input$setSeed)
-      #   set.seed(500)
-      #   if((input$selRows >= 2) & (input$selRows < nrow(data.in))){
-      #     print("morethan2selrow and selrows < datain")
-      #     # if input$selRows == nrow(data.in) then we should not do anything (this save refreshing when clicking the subset button)
-      #     if(length(input$selCols)<=1) {
-      #       print("input$selCols)<=1")
-      #       data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),]}
-      #     if(length(input$selCols)>1) {
-      #       print("input$selCols)>1")
-      #       data.in=data.in[sample(1:nrow(data.in),pmin(500,input$selRows)),input$selCols]}
-      #   }
-      # }
-    #}
-
-
-    if( length(input$annoVar) > 0 ){
-
-      samplesAnnot <- reactives$metadata[,input$annoVar, drop = F]
-
-    }
+interactiveHeatmap <- reactiveValues(plot = NULL)
+observeEvent(input$launchheat,{
+  withProgress(
+    message = "Computing heatmap",value = 0.5,detail = "PLEASE WAIT UNTIL THE END OF PROCESSING",{
+  req(isolate({reactives$metadata}))
+  req(reactives2$selData)
+  data.in <- reactives2$selData
+  samplesAnnot <- NULL
     ss_num =  sapply(data.in, is.numeric) # in order to only transform the numeric values
-    #if(input$transpose) data.in=t(data.in)
-    # if(input$transform_fun!='.'){
-    #   if(input$transform_fun=='is.na10'){
-    #     updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
-    #     data.in[, ss_num] = heatmaply::is.na10(data.in[, ss_num])
-    #   }
-    #   if(input$transform_fun=='cor'){
-    #     updateCheckboxInput(session = session,inputId = ns('showColor'),value = TRUE)
-    #     updateCheckboxInput(session = session,inputId = ns('colRngAuto'),value = FALSE)
-    #     data.in=stats::cor(data.in[, ss_num],use = "pairwise.complete.obs")
-    #   }
-    #   if(input$transform_fun=='log') data.in[, ss_num]= apply(data.in[, ss_num],2,log)
-    #   if(input$transform_fun=='sqrt') data.in[, ss_num]= apply(data.in[, ss_num],2,sqrt)
-    #   if(input$transform_fun=='normalize') data.in=heatmaply::normalize(data.in)
-    #   if(input$transform_fun=='scale') data.in[, ss_num] = scale(data.in[, ss_num])
-    #   if(input$transform_fun=='percentize') data.in=heatmaply::percentize(data.in)
-    # }
-
     if(input$colRngAuto){
       ColLimits=NULL
     }else{
       ColLimits=c(input$colorRng_min, input$colorRng_max)
     }
-
-    #distfun_row = function(x) stats::dist(x, method = "euclidean")
     if (length(input$distFun_row) != 0){
     if(input$distFun_row != "pearson"){
     distfun_row = function(x) stats::dist(x, method = input$distFun_row)
@@ -420,7 +230,6 @@ interactiveHeatmap<- reactive({
     }
     }
     if (length(input$distFun_col) != 0){
-      #print(input$distFun_col)
       if(input$distFun_col != "pearson"){
         distfun_col = function(x) stats::dist(x, method = input$distFun_col)
       } else {
@@ -429,16 +238,31 @@ interactiveHeatmap<- reactive({
           return(1- factoextra::get_dist(x, method = "pearson", stand = FALSE))}
       }
     }
-    # distfun_row =  function(x) stats::dist(x, method = input$distFun_row)
-    # distfun_col =  function(x) stats::dist(x, method = input$distFun_col)
-
+    
     hclustfun_row = function(x) stats::hclust(x, method = input$hclustFun_row)
     hclustfun_col = function(x) stats::hclust(x, method = input$hclustFun_col)
-
     if(length(input$annoVar)>0){
-
-    # if(length(input$annoVar) == 1){
-    # Annot_name <- input$annoVar
+      if("Clusters" %in% input$annoVar){
+        if(!is.null(interactiveHeatmap$plot$dendCol)){
+          metadata <- reactives$metadata
+          metadata$Clusters <- interactiveHeatmap$plot$dendCol
+          print(head(interactiveHeatmap$plot$dendCol))
+          print(head(metadata))
+          print(input$annoVar)
+          samplesAnnot <- metadata[,input$annoVar, drop = F]
+        } else {
+          showModal(modalDialog(
+            title = "No clusters data available for annotation",
+            "Compute a first heatmap to get clusters",
+            easyClose = TRUE,
+            footer = tagList(
+              modalButton("Got it"))
+          ))
+          return()
+        }
+      } else {
+        samplesAnnot <- isolate({reactives$metadata[,input$annoVar, drop = F]})
+      }
     p <- heatmaply::heatmaply(data.in,
                               main = input$main,xlab = input$xlab,ylab = input$ylab,
                               row_text_angle = input$row_text_angle,
@@ -457,13 +281,8 @@ interactiveHeatmap<- reactive({
                               showticklabels = c(TRUE, printRows),
                               limits = ColLimits) %>%
       plotly::layout(margin = list(l = input$l, b = input$b))
-
     p$elementId <- NULL
-
-    return(p)
-
     } else {
-
       p <- heatmaply::heatmaply(data.in,
                                 main = input$main,xlab = input$xlab,ylab = input$ylab,
                                 row_text_angle = input$row_text_angle,
@@ -481,9 +300,7 @@ interactiveHeatmap<- reactive({
                                 showticklabels = c(TRUE, printRows),
                                 limits = ColLimits) %>%
         plotly::layout(margin = list(l = input$l, b = input$b))
-
-
-
+    }
         if (length(input$distFun_row) != 0){
           if(input$distFun_row != "pearson"){
             p$dendRow <- cutree(
@@ -496,13 +313,6 @@ interactiveHeatmap<- reactive({
             k = input$r)
           }
         }
-      # p$dendRow <- cutree(
-      #   #hclust(dist(data.in,method = input$distFun_row),method = input$hclustFun_row),
-      #   k = input$r
-      #)
-      # print("rowclust")
-      # print(p$dendRow)
-
         if (length(input$distFun_col) != 0){
           if(input$distFun_col != "pearson"){
             p$dendCol <- cutree(
@@ -515,40 +325,80 @@ interactiveHeatmap<- reactive({
             k = input$c)
           }
         }
-      #p$dendCol <- cutree(
-        #hclust(dist(t(data.in),method = input$distFun_col),method = input$hclustFun_col),
-       # k = input$c)
-
       p$elementId <- NULL
-      #p
-      return(p)
-    }
-  })
-
-  observeEvent(reactives2$selData,{
-    output$heatout <- plotly::renderPlotly({
-      interactiveHeatmap()
+      interactiveHeatmap$plot <- p
     })
+}) 
+
+observeEvent(interactiveHeatmap$plot,{
+    output$heatout <- plotly::renderPlotly({
+      interactiveHeatmap$plot
+    })
+})
+    
+  output$tables=renderDataTable(reactives2$selData)
+  
+  header.true <- function(df) {
+    colnames(df) <- as.character(df[1,])
+    df[-1,]
+  }
+  clustertables <- reactiveValues(samples = NULL, genes = NULL)
+  
+  observeEvent(interactiveHeatmap$plot$dendCol,{
+    req(interactiveHeatmap$plot$dendRow)
+    clustergenes <- data.frame(interactiveHeatmap$plot$dendRow)
+    colnames(clustergenes) <- "Clusternumber"
+    clustergenes <- clustergenes %>% rownames_to_column()
+    clustergenes <- clustergenes %>% pivot_wider(names_from = Clusternumber,values_from = rowname,values_fill =  NA)
+    clustergenes <- apply(clustergenes,2 ,function(x){x <- unlist(x)})
+    clustergenes <- plyr::ldply(clustergenes,rbind)
+    clustergenes <- t(clustergenes)
+    clustergenes <- header.true(clustergenes)
+    clustertables$genes <- clustergenes
   })
-
-  output$tables=renderDataTable(reactives2$selData#,server = TRUE,filter='top',
-                                       #                               extensions = c('Scroller','FixedHeader','FixedColumns','Buttons','ColReorder'),
-                                       #                               options = list(
-                                       #                                 dom = 't',
-                                       #                                 buttons = c('copy', 'csv', 'excel', 'pdf', 'print','colvis'),
-                                       #                                 colReorder = TRUE,
-                                       #                                 scrollX = TRUE,
-                                       #                                 fixedColumns = TRUE,
-                                       #                                 fixedHeader = TRUE,
-                                       #                                 deferRender = TRUE,
-                                       #                                 scrollY = 500,
-                                       #                                 scroller = TRUE
-                                       #                               )
-  )
-
+  output$clustersgenes <- renderDataTable({
+    req(clustertables$genes)
+    DT::datatable(clustertables$genes,options = list(scrollX=TRUE,autoWidth = TRUE,rownames = FALSE))
+    })
+  
+  output$clustersgenesdl <- downloadHandler(
+    filename = function() {
+      paste("Genes_clusters",Sys.Date(),".xlsx",sep="")
+    },
+    content = function(file) {
+      openxlsx::write.xlsx(clustertables$genes,file = file,row.names = FALSE,col.names = TRUE) 
+    }
+    )
+  
+  observeEvent(interactiveHeatmap$plot$dendCol,{
+    req(interactiveHeatmap$plot$dendCol)
+    clustersamples <- data.frame(interactiveHeatmap$plot$dendCol)
+    colnames(clustersamples) <- "Clusternumber"
+    clustersamples <- clustersamples %>% rownames_to_column()
+    clustersamples <- clustersamples %>% pivot_wider(names_from = Clusternumber,values_from = rowname,values_fill =  NA)
+    clustersamples <- apply(clustersamples,2 ,function(x){x <- unlist(x)})
+    clustersamples <- plyr::ldply(clustersamples,rbind)
+    clustersamples <- t(clustersamples)
+    clustersamples <- header.true(clustersamples)
+    clustertables$samples <- clustersamples
+  })
+  output$clustersamples <- renderDataTable({
+    req(clustertables$samples)
+    DT::datatable(clustertables$samples,options = list(scrollX=TRUE,autoWidth = TRUE),rownames = FALSE)
+    })
+  
+  output$clustersamplesdl <- downloadHandler(
+    filename = function() {
+      paste("Samples_clusters",Sys.Date(),".xlsx",sep="") 
+      },
+      content = function(file) {
+        openxlsx::write.xlsx(clustertables$samples,file = file,row.names = FALSE,col.names = TRUE,rownames = FALSE) 
+      }
+    )
+  
   #Clone Heatmap ----
-  observeEvent({interactiveHeatmap()},{
-    h<-interactiveHeatmap()
+  observeEvent({interactiveHeatmap$plot},{
+    h<-interactiveHeatmap$plot
 
     l<-list(main = input$main,xlab = input$xlab,ylab = input$ylab,
             row_text_angle = input$row_text_angle,
@@ -570,7 +420,6 @@ interactiveHeatmap<- reactive({
     l=data.frame(Parameter=names(l),Value=do.call('rbind',l),row.names = NULL,stringsAsFactors = FALSE)
     l[which(l$Value==''),2]='NULL'
     paramTbl=print(xtable::xtable(l),type = 'html',include.rownames=FALSE,print.results = FALSE,html.table.attributes = c('border=0'))
-
 
     h$width='100%'
     h$height='800px'
@@ -602,12 +451,11 @@ interactiveHeatmap<- reactive({
     )
   })
 
-} # end of if !is.null(data)
-
-#print(return)
-#print(names(p))
-#print(names(interactiveHeatmap()))
-#return(p)
-return(interactiveHeatmap())
-
+#observeEvent(interactiveHeatmap$plot,ignoreInit = TRUE,{
+#observe({
+#return(interactiveHeatmap$plot)
+#return(interactiveHeatmap$plot)
+#print("returning interactiveHearmap")
+return(interactiveHeatmap)
+#})
 }
