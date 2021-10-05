@@ -5,11 +5,10 @@ devtools::document('.')
 devtools::load_all('.')
 options(app.prod = FALSE) # TRUE = production mode, FALSE = development mode
 library(shiny)
+library(BioshinyModules)
 import::from(shinydashboard,box,dashboardPage,dashboardSidebar,dashboardBody,dashboardHeader,DT)
 
-
 if (interactive()){
-
   ui <- dashboardPage(
     dashboardHeader(title = "Filter RNAseq Test"),
     dashboardSidebar(),
@@ -22,7 +21,6 @@ if (interactive()){
 
     metadata_path <- system.file("extdata", "metadata.csv", package = "BioshinyModules")
     counts_path <- system.file("extdata", "rawcounts.csv", package = "BioshinyModules")
-
     metadata <- reactiveValues(table = read.table(metadata_path, header = TRUE, sep = ",",
                                                   row.names = 1)
     )
@@ -30,17 +28,14 @@ if (interactive()){
                                                 row.names = 1)
     )
 
-
-
     filtered_counts <- callModule(FilterRNAServer, id = "filtRnaSeq", session = session,
                        data = counts)
-
-  observe({
-    if(exists("filtered_counts")){
-    print(filtered_counts$DataFiltered)
-    }
-  })
-
+    
+  # observe({
+  #   if(exists("filtered_counts")){
+  #   print(filtered_counts$DataFiltered)
+  #   }
+  # })
   }
   shinyApp(ui, server)
 }

@@ -10,8 +10,7 @@ ClusteringServer(
   session,
   data = NULL,
   metadata = NULL,
-  printRows = FALSE,
-  vst = FALSE
+  printRows = FALSE
 )
 }
 \arguments{

@@ -16,13 +16,12 @@
 #' @importFrom shiny NS actionButton icon uiOutput
 #' @importFrom shinyWidgets progressBar updateProgressBar
 #' @import DT
-#'
-#'
-
+#' @importFrom ggiraph girafeOutput
 
 FilterRNAUI <- function(id){
-
   ns <- NS(id)
+  tabsetPanel(id = ns("tabsetpanel"),
+    tabPanel("Filter TPM features",id = ns("tab1"),
   tagList(
     # numericInput(inputId = ns("TPM_sum"),
     #               label = "Select features with TPM sum >= to : ", min = 0, max = 20, value = 10),
@@ -35,7 +34,7 @@ FilterRNAUI <- function(id){
                  label = "Select features with TPM value >= to : ", min = 0, max = 20, value = 2)),
     column(width = 6,numericInput(inputId = ns("nsamples"),
                  label = "in at least 'value' % of samples : ", min = 0, max = 20, value = 10)))),
-    box(title = "Filtered table",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+    box(title = "Filtered table (TPM)",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
         status = "primary",width= 12,
     fluidRow(
       column(
@@ -44,14 +43,45 @@ FilterRNAUI <- function(id){
         id = ns("pbar"), value = 100,
         total = 100, display_pct = TRUE
       ),
-      DT::dataTableOutput(outputId = ns("table"))),
+      DT::dataTableOutput(outputId = ns("table")))),
      ) # end of column
-    ) # end of FluidRow
-
+    ), # end of FluidRow
+    fluidRow(
+      column(
+      width = 12,downloadButton(ns("dltable"), label = "Download Filtered table"))
+      )
+  ),
+  tabPanel("Explore TPM on filtered features",id = ns("tab2"),
+           tagList(
+    #box(title = "Explore features expression",collapsible = TRUE, collapsed = TRUE,solidHeader = TRUE,
+    #    status = "primary",width= 12,
+    fluidRow(
+      br(),
+      column(
+        width = 12,
+        #actionButton(ns("actionButton"),"Use the feature from the table above"),
+        #conditionalPanel("input.actionButton == 1",
+                    pickerInput(ns("selected_genes"), label = "Select genes to explore TPM expression",
+                    choices = NULL,
+                    width = "100%",
+                    selected = NULL,
+                    multiple = TRUE,
+                    choicesOpt = NULL,
+                    inline = FALSE,
+                    options = pickerOptions(
+                      actionsBox = TRUE,
+                      title = "Select genes",
+                      liveSearch = TRUE,
+                      liveSearchStyle = "contains",
+                    )),
+                    #),
+        br(),
+        #plotOutput(ns("boxplots")))
+        fluidRow(girafeOutput(ns("boxplots"))))
+      #)
+    )))
   ) # end of TagList
-
 }
-
 
 #' @param input,output,session standards \code{shiny} server arguments.
 #' @param name Does the file have a Header
@@ -63,7 +93,7 @@ FilterRNAUI <- function(id){
 #' @title Filter counts data for further analysiss server side
 #' @importFrom shiny observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
-
+#' @importFrom ggiraph geom_point_interactive renderGirafe
 
 FilterRNAServer <- function(input, output, session, data = NULL) {
 
@@ -72,8 +102,6 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
   returns <- reactiveValues(DataFiltered = NULL)
 
   observeEvent(c(data$table,
-                 #input$TPM_mean,
-                 #input$TPM_sum
                  input$TPM_filter,
                  input$nsamples),{
   req(input$nsamples)
@@ -81,30 +109,59 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
 
   if (!is.null(data$table)){
   data <- data$table
-  #Threshold <- length(colnames(data))*input$nsamples/100
-  #isexpr <- names(which(future.apply::future_apply(data, 1, function(x){length(which(x>=input$TPM_filter))})>=Threshold))
   isexpr <- rowSums(data >= input$TPM_filter) >= ncol(data)*input$nsamples/100
   returns$DataFiltered <-  data[isexpr,]
   } # end of if
   })
 
-
   observeEvent(returns$DataFiltered, {
     updateProgressBar(
       session = session, id = "pbar",
       value = nrow(returns$DataFiltered), total = nrow(data$table),
-      title = "Number of features after filetering step :"
+      title = "Number of features after filtering step :"
     )
 })
+  
+ observeEvent({input$tabsetpanel},{
+   req(returns$DataFiltered)
+   print(input$tabsetpanel)
+   if (length(input$tabsetpanel) >= 1){
+     if(input$tabsetpanel == "Explore TPM on filtered features"){
+          updatePickerInput(session= session,
+                            "selected_genes",choices = rownames(returns$DataFiltered))
+   }}
+ })
+  
+ output$boxplots <- renderGirafe({
+   req(input$selected_genes)
+   data <- returns$DataFiltered[input$selected_genes,]
+   data$Genes <- rownames(data)
+   data <- data %>% gather(value = "counts", key ="Samples", -Genes)
+   
+   p <- ggplot(data,
+               aes_string(x="Genes", y="counts", fill = "Genes")) +
+     geom_boxplot(outlier.alpha = FALSE)  +
+     geom_point_interactive(position=position_jitterdodge(jitter.width=0.5, dodge.width = 0.2,
+                                                          seed = 1234),
+                            pch=21,
+                            show.legend = T,aes(tooltip = Samples))
+   print(girafe(ggobj = p))
+ })
 
     output$table <- DT::renderDataTable({
-      returns$DataFiltered
-    }, options = list(pageLength = 10,scrollX = TRUE))
-
-
- # end of observer
-
-
+      DT::datatable(returns$DataFiltered,
+      extensions = "FixedColumns",
+      options = list(pageLength = 10,scrollX = TRUE,fixedColumns = list(leftColumns = 1)))
+    })
+    
+    output$dltable <- downloadHandler(
+      filename = function() {
+        paste0("TPM_filtered_table",as.character(Sys.time()),".csv")
+      },
+      content = function(file) {
+        write.table(returns$DataFiltered,file = file, sep = ",",quote = FALSE)
+      })
+  #end of observer
   return(returns)
 }
 
