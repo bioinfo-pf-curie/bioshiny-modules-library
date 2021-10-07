@@ -6,6 +6,7 @@ devtools::load_all('.')
 options(app.prod = FALSE) # TRUE = production mode, FALSE = development mode
 library(shiny)
 library(BioshinyModules)
+library(cicerone)
 import::from(shinydashboard,box,dashboardPage,dashboardSidebar,dashboardBody,dashboardHeader,DT)
 
 if (interactive()){
@@ -13,7 +14,9 @@ if (interactive()){
     dashboardHeader(title = "Filter RNAseq Test"),
     dashboardSidebar(),
     dashboardBody(
-      FilterRNAUI(id = "filtRnaSeq")
+      fluidPage(
+      list(use_cicerone()),
+      FilterRNAUI(id = "filtRnaSeq"))
     )
   )
 

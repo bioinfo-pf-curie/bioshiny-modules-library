@@ -18,17 +18,25 @@
 #' @import DT
 #' @importFrom ggiraph girafeOutput
 
+
 FilterRNAUI <- function(id){
   ns <- NS(id)
   tabsetPanel(id = ns("tabsetpanel"),
-    tabPanel("Filter TPM features",id = ns("tab1"),
+    tabPanel(title = "Filter TPM features",
+             #id = ns("tab1"),
+             #fluidRow(column(width = 9),
+             #column(width = 3,actionButton(inputId = ns("tab1"),label = NULL,style = "visibility: hidden;"))),
   tagList(
+    #div(id = "home",
     # numericInput(inputId = ns("TPM_sum"),
     #               label = "Select features with TPM sum >= to : ", min = 0, max = 20, value = 10),
     # numericInput(inputId = ns("TPM_mean"),
      #            label = "Select features with TPM mean >= to : ", min = 0, max = 20, value = 2),
-    box(title = "Thresholds",collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
+    box(p('Filters ',actionButton(ns("startCicerone"),label=NULL,icon = icon("info-circle"))),
+        id = ns('Filters'),
+        collapsible = TRUE, collapsed = FALSE,solidHeader = TRUE,
         status = "primary",width= 12,
+        br(),
     fluidRow(column(width = 6,
     numericInput(inputId = ns("TPM_filter"),
                  label = "Select features with TPM value >= to : ", min = 0, max = 20, value = 2)),
@@ -51,7 +59,8 @@ FilterRNAUI <- function(id){
       width = 12,downloadButton(ns("dltable"), label = "Download Filtered table"))
       )
   ),
-  tabPanel("Explore TPM on filtered features",id = ns("tab2"),
+  tabPanel("Explore TPM on filtered features",# value = "tab2",
+           #h1("Title", id = ns("steptitle")),
            tagList(
     #box(title = "Explore features expression",collapsible = TRUE, collapsed = TRUE,solidHeader = TRUE,
     #    status = "primary",width= 12,
@@ -79,7 +88,7 @@ FilterRNAUI <- function(id){
         #plotOutput(ns("boxplots")))
         fluidRow(girafeOutput(ns("boxplots"))))
       #)
-    )))
+    )))# %>% add_class("tab2")
   ) # end of TagList
 }
 
@@ -94,10 +103,47 @@ FilterRNAUI <- function(id){
 #' @importFrom shiny observeEvent reactiveValues callModule observe icon
 #' @importFrom htmltools tags HTML
 #' @importFrom ggiraph geom_point_interactive renderGirafe
+#' @import cicerone
 
 FilterRNAServer <- function(input, output, session, data = NULL) {
 
   ns <- session$ns
+  
+  ############# Cicerone ###########""
+  guide <- Cicerone$
+    new(id = ns("ciceroneGuide"))$
+    step(el = ns("Filters"),
+         title ="Here you can play with threshold an remove noise from your RNAseq data",
+         HTML(
+         "</br></br>If you observe in the <b>[DEA outlet]</b> a skewing of the p.values distribution towards 1, it indicates that the test is too conservative so results in more Type II Errors :</br></br> 
+         <i>Increasing the filters' thresholds could help removing background noise</i>")
+    )$
+     step(
+       el = ns("table"),
+       title = "This table resume the features keeped after the filtering step"
+    )$
+      step(
+        #el = ns("tab1"),
+        el = "[data-value='Explore TPM on filtered features']",
+        #ns("steptitle"),
+        title = "You can now explore TPM expression on remaining features in the second outlet",
+        is_id=FALSE
+    #    #tab = ns("tab2"),
+    #    #tab_id = ns("tabsetpanel")
+    )
+  
+  observeEvent(input$startCicerone, {
+    guide$init()$start()
+  })
+  
+  # observeEvent(input$ciceroneGuide_cicerone_next, {
+  #   print(input$ciceroneGuide_cicerone_next)
+  #   if(grepl("tab2",input$homeGuide_cicerone_previous$before_previous) ) runjs("document.querySelector('.navbar').style.position = 'absolute'; document.querySelector('.navbar').style.position")
+  #   
+  # })
+  ############# END of Cicerone ###########""
+  
+  
   rawdata <- reactiveValues(table = NULL)
   returns <- reactiveValues(DataFiltered = NULL)
 
