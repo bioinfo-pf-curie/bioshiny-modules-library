@@ -16,6 +16,7 @@ if (interactive()){
     dashboardHeader(title = "Clustering Module Test"),
     dashboardSidebar(),
     dashboardBody(
+      list(use_cicerone()),
       fluidRow(
       ClusteringUI(id = "heatmapID")
       ) # end of FluidPage
@@ -65,8 +66,8 @@ if (interactive()){
      #heatmap <-
       isolate(
        heatmap <- callModule(ClusteringServer, id = "heatmapID", session = session,
-                                    data = counts, metadata =  metadata, printRows = FALSE,
-                           vst = vst)
+                                    data = counts, metadata =  metadata, printRows = FALSE)
+                           #vst = vst)
 )
        })
  #   })

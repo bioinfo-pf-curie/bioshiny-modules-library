@@ -136,11 +136,6 @@ FilterRNAServer <- function(input, output, session, data = NULL) {
     guide$init()$start()
   })
   
-  # observeEvent(input$ciceroneGuide_cicerone_next, {
-  #   print(input$ciceroneGuide_cicerone_next)
-  #   if(grepl("tab2",input$homeGuide_cicerone_previous$before_previous) ) runjs("document.querySelector('.navbar').style.position = 'absolute'; document.querySelector('.navbar').style.position")
-  #   
-  # })
   ############# END of Cicerone ###########""
   
   

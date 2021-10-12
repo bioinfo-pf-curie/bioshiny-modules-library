@@ -9,6 +9,9 @@
 #'
 #' @return a \code{\link[shiny]{reactiveValues}} containing the data selected under slot \code{data}
 #' and the name of the selected \code{data.frame} under slot \code{name}.
+#' 
+#' 
+#' @import cicerone
 #' @export
 #'
 #'
@@ -27,10 +30,12 @@ ClusteringUI <- function(id){
       }"),
       sidebarLayout(
         sidebarPanel(width = 12,
+          column(width = 12,
           fluidRow(
-          box(title = 'Clustering data',collapsible = TRUE,collapsed = FALSE,width = NULL, status = "primary",solidHeader = TRUE,
+          box(title = p('Clustering data',actionButton(ns("startCicerone"),label=NULL,icon = icon("info-circle")))
+              ,collapsible = TRUE,collapsed = FALSE,width = NULL, status = "primary",solidHeader = TRUE,
           fluidPage(
-          pickerInput(ns('annoVar'),'Annotation',
+            div(id = ns("annodiv"),pickerInput(ns('annoVar'),'Annotation',
                       choices = NULL,
                       selected=NULL,
                       multiple=TRUE,
@@ -39,11 +44,11 @@ ClusteringUI <- function(id){
                         title = "Select variables for annotation",
                         liveSearch = TRUE,
                         liveSearchStyle = "contains",
-                      )),
-          column(width=12,sliderInput(ns("r"), "Number of row Clusters", min = 1, max = 15, value = 2)),
-          column(width=12,sliderInput(ns("c"), "Number of column Clusters", min = 1, max = 15, value = 2))
+                      ))),
+          column(width=12,div(id = ns("rdiv"),sliderInput(ns("r"), "Number of row Clusters", min = 1, max = 15, value = 2,width = "100%"))),
+          column(width=12,div(id = ns("cdiv"),sliderInput(ns("c"), "Number of column Clusters", min = 1, max = 15, value = 2,width = "100%")))
           )
-          ) # end of fluidPage
+          )) # end of fluidPage
           ) # end of box and fluidRow
         ),
         mainPanel(width = 12,
@@ -61,11 +66,11 @@ ClusteringUI <- function(id){
                                    br(),
                                    fluidRow(
                                      box(title = "Additionnal Parameters", collapsible = TRUE,
-                                         collapsed = TRUE, status = "primary", width = NULL, solidHeader = TRUE,
+                                         collapsed = FALSE, status = "primary", width = NULL, solidHeader = TRUE,
                                          fluidPage(
-                                           column(3,checkboxInput(ns('showColor'),'Color')),
-                                           column(3,checkboxInput(ns('showMargin'),'Layout')),
-                                           column(3,checkboxInput(ns('showDendo'),'Dendrogram')),
+                                           column(3,div(id = ns("showColordiv"),checkboxInput(ns('showColor'),'Color'))),
+                                           column(3,div(id = ns("showMargindiv"),checkboxInput(ns('showMargin'),'Layout'))),
+                                           column(3,div(id = ns("showDendodiv"),checkboxInput(ns('showDendo'),'Dendrogram'))),
                                            htmltools::hr(),
                                            conditionalPanel('input.showColor==1',ns = ns,
                                                                    htmltools::hr(),
@@ -143,11 +148,59 @@ ClusteringUI <- function(id){
 #' @importFrom viridis magma plasma inferno
 #' @importFrom SummarizedExperiment assay
 #' @importFrom tibble rownames_to_column
+#' @import cicerone
+
 
 
 ClusteringServer <- function(input, output, session, data = NULL, metadata = NULL,printRows = FALSE) {
 
   ns <- session$ns
+  
+  ############# Cicerone ###########""
+  guide <- Cicerone$
+    new(id = ns("ciceroneGuide"))$
+    step(el = ns("annodiv"),
+         title ="Select some variables to annotate your heatmap",
+    )$
+     step(
+       el = ns("rdiv"),
+       title = "Select number of clusters to build on genes"
+    )$
+    step(
+       el = ns("cdiv"),
+       title = "Select number of clusters to build on samples"
+    )$
+    step(
+      el = ns('showColordiv'),
+      title = 'Unlock parameters to custom heatmap colors',
+      HTML("<li> Select a color palette</li><li>Select number of colors</li>")
+    )$
+    step(
+      el = ns('showMargindiv'),
+      title = 'Unlock parameters to custom heatmap layout',
+      HTML("<li> Main/X-axe/Y-axe titles</li><li>Text angles</li><li>margins</li>")
+    )$
+    step(
+      el = ns('showDendodiv'),
+      title = 'Unlock parameters to custom cluster dendograms',
+      HTML("<li> Add/Remove a dendogram</li><li>Select distance calculation method</li><li>Select Clustering linkage method</li><li>Select seriation method</li><li>Change dendogram branch width</li>")
+    )$
+    step(
+      el = ns("launchheat"),
+      title = "Finally press this button to run heatmap",
+      HTML("It can takes time, depending on the size of your data")
+    )$
+    step(
+       el = "[data-value='Clusters']",
+       title = "Clusters' lists are downloadble here",
+       is_id = FALSE
+    )
+  
+  observeEvent(input$startCicerone, {
+    guide$init()$start()
+  })
+  
+  ############# END of Cicerone ###########""
 
   reactives <- reactiveValues(metadata = NULL)
   reactives2 <- reactiveValues(selData = NULL)
@@ -358,7 +411,7 @@ observeEvent(interactiveHeatmap$plot,{
   })
   output$clustersgenes <- renderDataTable({
     req(clustertables$genes)
-    DT::datatable(clustertables$genes,options = list(scrollX=TRUE,autoWidth = TRUE,rownames = FALSE))
+    DT::datatable(clustertables$genes,options = list(scrollX=TRUE,autoWidth = TRUE),rownames = FALSE)
     })
   
   output$clustersgenesdl <- downloadHandler(
