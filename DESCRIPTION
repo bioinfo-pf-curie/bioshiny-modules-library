@@ -43,3 +43,4 @@ Imports:
   viridis,
   viridisLite,
   xtable
+RoxygenNote: 7.1.2
